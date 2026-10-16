@@ -4,21 +4,21 @@ Prywatna ściąga taktyczna naszej drużyny CS2: trzy strategie na mapę (pistol
 
 Strona jest w pełni statyczna: jeden plik `index.html` + dane w `data/*.json` + obrazki w `assets/`. Nie ma backendu, bazy danych ani kont.
 
-> **Uwaga o prywatności:** strona na GitHub Pages jest publicznie dostępna pod swoim adresem (nawet gdy repozytorium jest prywatne). Strona ma `noindex`, więc nie trafi do wyszukiwarek, ale każdy, kto zna link, może ją otworzyć. Nie wrzucaj tu niczego, czego nie chcesz pokazać.
+> **Uwaga o prywatności:** strona na GitHub Pages jest publicznie dostępna pod swoim adresem — każdy, kto zna link, może ją otworzyć (strona ma `noindex`, więc nie trafi do wyszukiwarek). GitHub Pages z **prywatnego** repozytorium wymaga płatnego planu (GitHub Pro/Team/Enterprise); na darmowym GitHub Free repozytorium musi być **publiczne**, a wtedy wszystkie JSON-y, screenshoty i dokumenty są widoczne także na github.com, nie tylko pod adresem strony. Nie wrzucaj tu niczego, czego nie chcesz pokazać.
 
 ## Uruchomienie lokalne
 
 Otwarcie `index.html` podwójnym kliknięciem **nie zadziała** (przeglądarka blokuje wczytywanie JSON z `file://`). W folderze repozytorium uruchom:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8000     # Windows: py -m http.server 8000
 ```
 
 i otwórz <http://localhost:8000>.
 
 ## Publikacja (GitHub Pages)
 
-1. Wypchnij repozytorium na GitHub.
+1. Wypchnij repozytorium na GitHub. Pamiętaj: na GitHub Free Pages działa tylko z **publicznego** repozytorium (prywatne wymaga planu Pro/Team/Enterprise) — patrz uwaga o prywatności wyżej.
 2. **Settings → Pages → Build and deployment → Deploy from a branch**, gałąź `main`, folder `/ (root)`.
 3. Po minucie strona będzie pod `https://<użytkownik>.github.io/<repozytorium>/`.
 
@@ -42,10 +42,14 @@ tools/validate.py           sprawdzanie danych przed pushem
 ## Przed każdym pushem
 
 ```bash
-python3 tools/validate.py
+python3 tools/validate.py       # Windows: py tools/validate.py
 ```
 
+(W kolejnych krokach `python3` zamień na `py`, jeśli jesteś na Windows.)
+
 Sprawdza składnię JSON, odwołania do ról i graczy, unikalność id, czy każdy obrazek istnieje **i czy wielkość liter w nazwie pliku się zgadza**. macOS i Windows ignorują wielkość liter, GitHub Pages nie — `Window.png` ≠ `window.png`. Najprościej: nazwy plików zawsze małymi literami.
+
+Walidator sprawdza też (gdy folder jest repozytorium git), czy każdy plik danych i obrazek jest **dodany do gita** pod dokładnie tą nazwą — na GitHub trafia tylko to, co git śledzi. Plik, którego nazwę zmieniono tylko wielkością liter (np. `Stara.png` → `stara.png`), na macOS i Windows wymaga `git mv -f Stara.png stara.png`, inaczej git zachowa starą nazwę. Nowe screenshoty trzeba dodać przez `git add`.
 
 Problemy w danych widać też na stronie — pasek „⚠ N problemów w danych” na dole ekranu.
 
@@ -83,7 +87,7 @@ Ten sam smoke na inną rozdzielczość = osobny wpis z innym `id`, `resolution` 
 
 ## Strategie (pistolówka, execute A/B, backup)
 
-Każda mapa ma dokładnie trzy sloty w `"strategies"`: `pistol`, `execute` (z wariantami `A` i `B`) oraz `backup`. Każda strategia ma ten sam format:
+Każda mapa ma dokładnie trzy sloty w `"strategies"`: `pistol`, `execute` (z wariantami `A` i `B`) oraz `backup` (inne klucze, np. literówka `pistolowka`, walidator zgłasza jako błąd). Każda strategia ma ten sam format:
 
 ```json
 {
@@ -131,8 +135,12 @@ Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola rozdzie
 
 ## Nowa mapa
 
-1. Dopisz do `data/maps.json`: `{ "id": "dust2", "name": "Dust II" }` (id: małe litery, cyfry, `-`).
-2. Utwórz `data/dust2.json` — skopiuj `data/mirage.json`, zmień `"id"` na `"dust2"`, wyczyść strategie (`null`) i lineupy (`[]`).
+1. Dopisz do tablicy `"maps"` w `data/maps.json` nowy wpis `{ "id": "dust2", "name": "Dust II" }` (po przecinku po poprzednim wpisie; id: małe litery, cyfry, `-`).
+2. Utwórz `data/dust2.json` — skopiuj `data/mirage.json` i zmień `"id"` na `"dust2"`. Potem zastąp zawartość `"strategies"` i `"lineups"` pustym szkieletem:
+
+   ```json
+   "strategies": { "pistol": null, "execute": { "A": null, "B": null }, "backup": null }, "lineups": []
+   ```
 3. Obrazki w `assets/tactics/dust2/` i `assets/lineups/dust2/<id-gracza>/`.
 4. `python3 tools/validate.py`, commit, push.
 
@@ -141,6 +149,7 @@ Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola rozdzie
 - Wybierz siebie w „Kim jestem”, a przy każdej strategii, wariancie execute, lineupie i w zakładce **Notatki** pojawi się pole „Moje notatki”.
 - Notatki zapisują się automatycznie w **tej przeglądarce na tym urządzeniu** (localStorage). Nie synchronizują się między urządzeniami ani członkami drużyny i nie trafiają do repozytorium.
 - Wyczyszczenie danych przeglądarki usuwa notatki. **Eksport notatek** pobiera kopię zapasową (`cs2-notatki-RRRR-MM-DD.json`); **Import notatek** ją wczytuje (np. na innym komputerze).
+- Notatki są przypisane do **adresu strony**: te zapisane na `localhost` nie pojawią się na `github.io` (i odwrotnie). Przenieś je eksportem i importem.
 - Zmiana `id` lineupu lub gracza „odpina” istniejące notatki od tego elementu.
 
 ## Linki do konkretnych widoków
@@ -150,6 +159,6 @@ Adres strony zapamiętuje widok, np. `…/#mirage/execute/B` albo `…/#mirage/l
 ## Testy (dla osoby rozwijającej aplikację)
 
 ```bash
-python3 -m unittest tools/test_validate.py
+python3 -m unittest tools/test_validate.py      # Windows: py -m unittest tools/test_validate.py
 node --test tools/test_core.mjs
 ```
