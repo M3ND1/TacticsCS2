@@ -5,8 +5,94 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>CS2 Playbook</title>
+<style>
+:root {
+  --bg: #16181b; --panel: #1c1f23; --border: #2a2d31; --text: #d7dadf; --muted: #8a9099;
+  --accent: #6a9f5b; --accent-bg: #22301f; --warn: #d29a3a; --err: #d0544f;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+button, select, textarea, input { font: inherit; color: inherit; }
+code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--panel); padding: 1px 4px; border-radius: 2px; }
+header { display: flex; align-items: center; gap: 16px; padding: 8px 16px; border-bottom: 1px solid var(--border); background: var(--panel); }
+.brand { font-weight: 700; letter-spacing: .08em; font-size: 12px; color: var(--muted); }
+.spacer { flex: 1; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+.seg button { background: none; border: 0; border-right: 1px solid var(--border); padding: 4px 10px; cursor: pointer; color: var(--muted); }
+.seg button:last-child { border-right: 0; }
+.seg button:hover { color: var(--text); }
+.seg button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
+.me { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+select { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 3px 6px; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--muted); cursor: pointer; text-decoration: underline; }
+.linkbtn:hover { color: var(--text); }
+nav.tabs { display: flex; gap: 2px; padding: 0 16px; border-bottom: 1px solid var(--border); }
+nav.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px; color: var(--muted); cursor: pointer; }
+nav.tabs button:hover { color: var(--text); }
+nav.tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+nav.tabs .sep { width: 1px; background: var(--border); margin: 8px; }
+main { padding: 12px 16px 48px; max-width: 1600px; }
+h1 { font-size: 16px; margin: 0; }
+h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px; font-weight: 600; }
+.titlebar { display: flex; align-items: center; gap: 10px; margin: 8px 0 12px; }
+.badge { font-size: 10px; font-weight: 700; letter-spacing: .06em; border: 1px solid var(--warn); color: var(--warn); padding: 1px 5px; border-radius: 2px; }
+.split { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.shot { display: block; max-width: 100%; max-height: 70vh; object-fit: contain; background: #0f1012; border: 1px solid var(--border); cursor: zoom-in; }
+.missing { display: flex; align-items: center; justify-content: center; min-height: 120px; padding: 12px; border: 1px solid var(--err); color: var(--err); background: #1a1315; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; word-break: break-all; }
+.pre { white-space: pre-wrap; margin: 0; }
+ol.steps { margin: 0; padding-left: 20px; }
+ol.steps li { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--border); }
+th { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.muted { color: var(--muted); }
+.warn { color: var(--warn); }
+.err { color: var(--err); }
+.empty { padding: 24px; border: 1px dashed var(--border); color: var(--muted); text-align: center; }
+.notes { margin-top: 8px; }
+.notes textarea { width: 100%; min-height: 70px; resize: vertical; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 6px; }
+.notes textarea:focus { outline: 1px solid var(--accent); }
+.notes textarea:disabled { opacity: .5; }
+.notes .bar { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-size: 12px; }
+.layout-lineups { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 16px; }
+.plist button { display: flex; justify-content: space-between; width: 100%; background: none; border: 0; border-left: 2px solid transparent; padding: 4px 8px; color: var(--muted); cursor: pointer; text-align: left; }
+.plist button:hover { color: var(--text); }
+.plist button[aria-pressed="true"] { color: var(--text); border-left-color: var(--accent); background: var(--accent-bg); }
+.filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 4px; }
+.filters > span { display: flex; align-items: center; gap: 6px; }
+.lineup { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.lineup .shot { max-height: 220px; }
+.res { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--accent); border: 1px solid var(--accent); padding: 0 5px; border-radius: 2px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+.fatal { max-width: 720px; margin: 48px auto; padding: 16px; border: 1px solid var(--err); }
+.fatal h1 { color: var(--err); margin-bottom: 8px; }
+#problems { position: fixed; left: 0; right: 0; bottom: 0; background: #231c12; border-top: 1px solid var(--warn); color: var(--warn); font-size: 12px; max-height: 40vh; overflow: auto; }
+#problems summary { padding: 6px 16px; cursor: pointer; }
+#problems ul { margin: 0; padding: 0 16px 8px 32px; }
+#lightbox { position: fixed; inset: 0; z-index: 10; background: rgba(0, 0, 0, .92); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
+#lightbox img { max-width: 100%; max-height: calc(100vh - 64px); object-fit: contain; }
+#lightbox .cap { margin-top: 8px; color: var(--muted); font-size: 12px; }
+#lightbox button { position: absolute; top: 10px; right: 14px; background: none; border: 1px solid var(--border); color: var(--text); padding: 2px 8px; cursor: pointer; }
+@media (max-width: 1000px) {
+  header { flex-wrap: wrap; }
+  .split, .lineup, .layout-lineups { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
+<header id="top" hidden>
+  <span class="brand">CS2 PLAYBOOK</span>
+  <div class="seg" id="maps" role="group" aria-label="Mapa"></div>
+  <span class="spacer"></span>
+  <label class="me">Kim jestem: <select id="me"></select></label>
+</header>
+<nav class="tabs" id="tabs" role="tablist" hidden></nav>
+<main id="main"><p class="muted">Wczytywanie…</p></main>
+<details id="problems" hidden><summary></summary><ul></ul></details>
+<div id="lightbox" hidden><button type="button" aria-label="Zamknij">✕</button><img alt=""><div class="cap"></div></div>
 <script id="core">
 // Pure logic, no DOM. Loaded by tools/test_core.mjs for unit tests.
 const Core = (() => {
@@ -385,6 +471,196 @@ const Core = (() => {
     formatResolution, lineupFacets, filterLineups,
   };
 })();
+</script>
+<script>
+"use strict";
+const $ = (sel) => document.querySelector(sel);
+
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "class") el.className = v;
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of children.flat(Infinity)) {
+    if (c != null && c !== false) el.append(c instanceof Node ? c : String(c));
+  }
+  return el;
+}
+
+// localStorage that never throws (private mode, blocked storage, quota)
+const store = {
+  get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+  set(key, value) { try { localStorage.setItem(key, value); return true; } catch { return false; } },
+  remove(key) { try { localStorage.removeItem(key); return true; } catch { return false; } },
+  entries(prefix) {
+    const out = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(prefix)) out.push([k, localStorage.getItem(k)]);
+      }
+    } catch { /* storage unavailable: nothing to list */ }
+    return out;
+  },
+};
+
+const app = { maps: [], team: { roles: [], players: [] }, mapCache: new Map(), state: null, problems: new Map() };
+
+const TAB_LABELS = { pistolowka: "Pistolówka", execute: "Execute", backup: "Backup", lineupy: "Lineupy", notatki: "Notatki" };
+
+async function loadJson(path) {
+  let res;
+  try {
+    res = await fetch(path, { cache: "no-cache" });
+  } catch (err) {
+    console.error(`[playbook] fetch ${path}`, err);
+    throw new Error(`${path}: nie udało się pobrać pliku (błąd sieci)`);
+  }
+  if (!res.ok) throw new Error(`${path}: nie udało się pobrać pliku (HTTP ${res.status})`);
+  return Core.parseJson(await res.text(), path);
+}
+
+function addProblems(list) {
+  for (const p of list) {
+    const key = `${p.file}: ${p.message}`;
+    if (app.problems.has(key)) continue;
+    app.problems.set(key, p);
+    console.warn(`[playbook] ${key}`);
+  }
+  const box = $("#problems");
+  const n = app.problems.size;
+  box.hidden = n === 0;
+  box.querySelector("summary").textContent = `⚠ ${n} ${Core.plural(n, "problem", "problemy", "problemów")} w danych`;
+  box.querySelector("ul").replaceChildren(...[...app.problems.keys()].map((k) => h("li", null, k)));
+}
+
+function showFatal(title, message) {
+  $("#top").hidden = true;
+  $("#tabs").hidden = true;
+  $("#main").replaceChildren(h("div", { class: "fatal" }, h("h1", null, title), h("p", { class: "pre" }, message)));
+}
+
+function currentMe() {
+  const id = store.get(Core.ME_KEY);
+  const valid = Core.validMe(id, app.team);
+  if (id && !valid) store.remove(Core.ME_KEY);
+  return valid;
+}
+
+function renderMePicker() {
+  const sel = $("#me");
+  const { active, subs } = Core.groupPlayers(app.team);
+  const opt = (p) => h("option", { value: p.id }, p.name || p.id);
+  sel.replaceChildren(
+    h("option", { value: "" }, "— wybierz —"),
+    ...active.map(opt),
+    ...(subs.length ? [h("optgroup", { label: "Rezerwowi" }, subs.map(opt))] : []),
+  );
+  sel.value = currentMe() || "";
+  sel.addEventListener("change", () => {
+    if (sel.value) store.set(Core.ME_KEY, sel.value);
+    else store.remove(Core.ME_KEY);
+    route();
+  });
+}
+
+function renderMapButtons() {
+  $("#maps").replaceChildren(...app.maps.map((m) => h("button", {
+    type: "button",
+    "aria-pressed": String(m.id === app.state.map),
+    onclick: () => navigate({ map: m.id, player: null }),
+  }, m.name || m.id)));
+}
+
+function renderTabs() {
+  const tab = (t) => h("button", {
+    type: "button", role: "tab",
+    "aria-selected": String(app.state.tab === t),
+    onclick: () => navigate({ tab: t }),
+  }, TAB_LABELS[t]);
+  $("#tabs").replaceChildren(tab("pistolowka"), tab("execute"), tab("backup"), h("span", { class: "sep" }), tab("lineupy"), tab("notatki"));
+}
+
+function navigate(partial) {
+  location.hash = Core.buildHash({ ...app.state, ...partial });
+}
+
+function getMap(id) {
+  if (!app.mapCache.has(id)) {
+    const promise = loadJson(`data/${id}.json`).then((data) => {
+      addProblems(Core.checkMap(data, id, app.team));
+      return Core.normalizeMap(data);
+    });
+    promise.catch(() => app.mapCache.delete(id)); // retry on next navigation
+    app.mapCache.set(id, promise);
+  }
+  return app.mapCache.get(id);
+}
+
+async function route() {
+  const s = Core.parseHash(location.hash, {
+    mapIds: app.maps.map((m) => m.id),
+    playerIds: app.team.players.map((p) => p.id),
+  });
+  const canonical = Core.buildHash(s);
+  if (location.hash !== canonical) history.replaceState(null, "", canonical);
+  app.state = s;
+  renderMapButtons();
+  renderTabs();
+  const mapName = (app.maps.find((m) => m.id === s.map) || {}).name || s.map;
+  document.title = `${mapName} · ${TAB_LABELS[s.tab]} — CS2 Playbook`;
+  const main = $("#main");
+  let map;
+  try {
+    map = await getMap(s.map);
+  } catch (err) {
+    console.error("[playbook]", err);
+    if (app.state === s) {
+      main.replaceChildren(h("div", { class: "fatal" }, h("h1", null, "Nie udało się wczytać mapy"), h("p", { class: "pre" }, err.message)));
+    }
+    return;
+  }
+  if (app.state !== s) return; // a newer navigation started while loading
+  main.replaceChildren();
+  const view = VIEWS[s.tab];
+  if (view) view(main, { map, state: s });
+}
+
+async function boot() {
+  if (location.protocol === "file:") {
+    showFatal("Uruchom przez lokalny serwer",
+      "Przeglądarka blokuje wczytywanie plików JSON z file://.\n\nW folderze repozytorium uruchom:\n\n    python3 -m http.server 8000\n\ni otwórz http://localhost:8000");
+    return;
+  }
+  try {
+    const [mapsIdx, team] = await Promise.all([loadJson("data/maps.json"), loadJson("data/team.json")]);
+    app.maps = (Array.isArray(mapsIdx && mapsIdx.maps) ? mapsIdx.maps : [])
+      .filter((m) => m && typeof m.id === "string" && /^[a-z0-9-]+$/.test(m.id));
+    app.team = Core.normalizeTeam(team);
+    addProblems([...Core.checkMapsIndex(mapsIdx), ...Core.checkTeam(team)]);
+  } catch (err) {
+    console.error("[playbook]", err);
+    showFatal("Nie udało się wczytać danych", err.message);
+    return;
+  }
+  if (!app.maps.length) {
+    showFatal("Brak map", "Plik data/maps.json nie zawiera żadnej poprawnej mapy.");
+    return;
+  }
+  $("#top").hidden = false;
+  $("#tabs").hidden = false;
+  renderMePicker();
+  window.addEventListener("hashchange", route);
+  await route();
+}
+
+// ── views: each later section registers VIEWS[<tab>] ──
+const VIEWS = {};
+
+boot();
 </script>
 </body>
 </html>
