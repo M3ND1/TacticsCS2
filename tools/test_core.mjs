@@ -216,3 +216,16 @@ test("checkMap skips reference checks when team data is unusable", () => {
   assert.ok(partial.includes('strategia "pistol": nieznana rola "entry" w assignments[0]'), partial.join("\n"));
   assert.ok(!partial.some((m) => m.includes("nieznany gracz")), partial.join("\n"));
 });
+
+test("checkMap flags unknown strategy slot keys", () => {
+  const data = {
+    id: "mirage",
+    strategies: { pistolowka: { title: "P" }, pistol: null, execute: { a: { title: "X" }, A: null, B: null }, backup: null },
+    lineups: [],
+  };
+  const msgs = Core.checkMap(data, "mirage", TEAM).map((p) => p.message);
+  assert.ok(msgs.includes('nieznany klucz "pistolowka" w "strategies" (dozwolone: pistol, execute, backup)'), msgs.join("\n"));
+  assert.ok(msgs.includes('nieznany klucz "a" w "strategies.execute" (dozwolone: A, B)'), msgs.join("\n"));
+  const ok = Core.checkMap({ id: "mirage", strategies: { pistol: null, execute: { A: null, B: null }, backup: null }, lineups: [] }, "mirage", TEAM);
+  assert.deepEqual(ok, []);
+});

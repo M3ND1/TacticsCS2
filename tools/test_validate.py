@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -46,6 +47,15 @@ def mirage():
     }
 
 
+def write_file(root, rel, content):
+    path = Path(root) / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if isinstance(content, str):
+        path.write_text(content, encoding="utf-8")
+    else:
+        path.write_text(json.dumps(content, ensure_ascii=False), encoding="utf-8")
+
+
 class ValidateTest(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -60,12 +70,7 @@ class ValidateTest(unittest.TestCase):
         self._tmp.cleanup()
 
     def write(self, rel, content):
-        path = self.root / rel
-        path.parent.mkdir(parents=True, exist_ok=True)
-        if isinstance(content, str):
-            path.write_text(content, encoding="utf-8")
-        else:
-            path.write_text(json.dumps(content, ensure_ascii=False), encoding="utf-8")
+        write_file(self.root, rel, content)
 
     def problems(self):
         return v.validate(self.root)
@@ -168,6 +173,27 @@ class ValidateTest(unittest.TestCase):
         self.assertProblem('gracz "s1": nieznana rola "igl"')
         self.assertProblem('gracz "s1": "status" musi być "active" albo "sub"')
 
+    def test_unknown_strategy_slot_keys(self):
+        m = mirage()
+        m["strategies"]["pistolowka"] = {"title": "X"}
+        m["strategies"]["execute"]["a"] = {"title": "X"}
+        self.write("data/mirage.json", m)
+        self.assertProblem('nieznany klucz "pistolowka" w "strategies" (dozwolone: pistol, execute, backup)')
+        self.assertProblem('nieznany klucz "a" w "strategies.execute" (dozwolone: A, B)')
+
+    def test_map_data_file_case_mismatch(self):
+        (self.root / "data/mirage.json").rename(self.root / "data/Mirage.json")
+        probs = self.problems()
+        self.assertEqual(
+            probs,
+            ['data/mirage.json: wielkość liter w nazwie pliku nie zgadza się z "data/Mirage.json" '
+             "— GitHub Pages rozróżnia wielkość liter"],
+        )
+
+    def test_index_file_case_mismatch(self):
+        (self.root / "data/team.json").rename(self.root / "data/Team.json")
+        self.assertProblem('data/team.json: wielkość liter w nazwie pliku nie zgadza się z "data/Team.json"')
+
     def test_cli_exit_codes(self):
         ok = subprocess.run([sys.executable, str(VALIDATE), str(self.root)], capture_output=True, text=True)
         self.assertEqual(ok.returncode, 0, ok.stdout + ok.stderr)
@@ -175,6 +201,63 @@ class ValidateTest(unittest.TestCase):
         bad = subprocess.run([sys.executable, str(VALIDATE), str(self.root)], capture_output=True, text=True)
         self.assertEqual(bad.returncode, 1)
         self.assertIn("brak pliku obrazka", bad.stdout)
+
+
+def git(root, *args):
+    subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+
+
+@unittest.skipUnless(shutil.which("git"), "git is not installed")
+class GitTrackingTest(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        for rel, content in (
+            ("data/maps.json", {"maps": [{"id": "mirage", "name": "Mirage"}]}),
+            ("data/team.json", TEAM),
+            ("data/mirage.json", mirage()),
+            ("assets/tactics/mirage/pistol.png", ""),
+            ("assets/lineups/mirage/p1/window-1920x1080.png", ""),
+        ):
+            write_file(self.root, rel, content)
+        git(self.root, "init", "-q")
+        git(self.root, "add", "-A")
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def problems(self):
+        return v.validate(self.root)
+
+    def test_fully_tracked_repo_is_ok(self):
+        self.assertEqual(self.problems(), [])
+
+    def test_untracked_image_is_reported(self):
+        git(self.root, "rm", "-q", "--cached", "assets/tactics/mirage/pistol.png")
+        self.assertEqual(
+            self.problems(),
+            ['data/mirage.json: plik "assets/tactics/mirage/pistol.png" nie jest dodany do gita '
+             '(git add "assets/tactics/mirage/pistol.png")'],
+        )
+
+    def test_untracked_data_file_is_reported(self):
+        git(self.root, "rm", "-q", "--cached", "data/mirage.json")
+        self.assertEqual(
+            self.problems(),
+            ['data/mirage.json: plik "data/mirage.json" nie jest dodany do gita (git add "data/mirage.json")'],
+        )
+
+    def test_case_only_rename_not_staged_is_reported(self):
+        # disk says pistol.png, git still knows Pistol.png
+        git(self.root, "rm", "-q", "--cached", "assets/tactics/mirage/pistol.png")
+        (self.root / "assets/tactics/mirage/pistol.png").rename(self.root / "assets/tactics/mirage/Pistol.png")
+        git(self.root, "add", "assets/tactics/mirage/Pistol.png")
+        (self.root / "assets/tactics/mirage/Pistol.png").rename(self.root / "assets/tactics/mirage/pistol.png")
+        self.assertEqual(
+            self.problems(),
+            ['data/mirage.json: git zna plik jako "assets/tactics/mirage/Pistol.png" — zmień nazwę przez: '
+             'git mv -f "assets/tactics/mirage/Pistol.png" "assets/tactics/mirage/pistol.png"'],
+        )
 
 
 if __name__ == "__main__":

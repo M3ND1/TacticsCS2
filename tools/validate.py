@@ -10,13 +10,17 @@ Kod wyjścia 0 = brak problemów, 1 = wypisano problemy.
 import json
 import os
 import re
+import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 MAP_ID_RE = re.compile(r"^[a-z0-9-]+$")
 RES_RE = re.compile(r"^\d+x\d+$")
 SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 LINEUP_REQUIRED = ("id", "player", "name", "target", "side", "resolution", "image")
+STRATEGY_SLOTS = ("pistol", "execute", "backup")
+VARIANTS = ("A", "B")
 RELATIVE_HINT = "musi być względna (bez / na początku, bez .., bez http)"
 
 
@@ -37,18 +41,24 @@ def is_relative_path(p):
     )
 
 
-def load_json(root, rel):
-    """Return (data, problems). data is None when the file is missing or invalid."""
-    path = Path(root) / rel
-    if not path.is_file():
+def load_json(root, rel, tracked=None):
+    """Return (data, problems). data is None when the file is missing, mis-cased or invalid."""
+    actual = find_exact(root, rel)
+    if actual is None:
         return None, [f"{rel}: brak pliku"]
+    if actual != rel:
+        return None, [
+            f'{rel}: wielkość liter w nazwie pliku nie zgadza się z "{actual}" '
+            "— GitHub Pages rozróżnia wielkość liter"
+        ]
+    problems = check_tracked(tracked, rel, rel)
     try:
-        with open(path, encoding="utf-8-sig") as fh:
-            return json.load(fh), []
+        with open(Path(root) / rel, encoding="utf-8-sig") as fh:
+            return json.load(fh), problems
     except json.JSONDecodeError as e:
-        return None, [f"{rel}: błąd składni JSON — linia {e.lineno}, kolumna {e.colno} ({e.msg})"]
+        return None, problems + [f"{rel}: błąd składni JSON — linia {e.lineno}, kolumna {e.colno} ({e.msg})"]
     except UnicodeDecodeError:
-        return None, [f"{rel}: plik nie jest zapisany w UTF-8"]
+        return None, problems + [f"{rel}: plik nie jest zapisany w UTF-8"]
 
 
 def check_maps_index(data):
@@ -186,13 +196,19 @@ def check_map(data, map_id, team):
         p('"strategies" musi być obiektem')
     else:
         s = data["strategies"]
+        for k in s:
+            if k not in STRATEGY_SLOTS:
+                p(f'nieznany klucz "{k}" w "strategies" (dozwolone: {", ".join(STRATEGY_SLOTS)})')
         check_strategy(s.get("pistol"), "pistol", role_ids, p)
         check_strategy(s.get("backup"), "backup", role_ids, p)
         ex = s.get("execute")
         if ex is not None and not is_obj(ex):
             p('"strategies.execute" musi być obiektem z kluczami "A" i "B"')
         elif is_obj(ex):
-            for variant in ("A", "B"):
+            for k in ex:
+                if k not in VARIANTS:
+                    p(f'nieznany klucz "{k}" w "strategies.execute" (dozwolone: {", ".join(VARIANTS)})')
+            for variant in VARIANTS:
                 check_strategy(ex.get(variant), f"execute.{variant}", role_ids, p)
 
     lineups = data.get("lineups")
@@ -261,7 +277,7 @@ def find_exact(root, rel):
     return "/".join(actual) if cur.is_file() else None
 
 
-def check_image(root, file, rel):
+def check_image(root, file, rel, tracked=None):
     actual = find_exact(root, rel)
     if actual is None:
         return [f'{file}: brak pliku obrazka "{rel}"']
@@ -271,15 +287,55 @@ def check_image(root, file, rel):
             f'{file}: wielkość liter w "{rel}" nie zgadza się z plikiem "{actual}" '
             "— GitHub Pages rozróżnia wielkość liter"
         ]
-    return []
+    return check_tracked(tracked, file, rel)
+
+
+def git_tracked(root):
+    """Tracked paths (relative to root) when root is inside a git work tree, else None."""
+    try:
+        inside = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
+            capture_output=True, text=True,
+        )
+        if inside.returncode != 0 or inside.stdout.strip() != "true":
+            return None
+        listing = subprocess.run(["git", "-C", str(root), "ls-files", "-z"], capture_output=True)
+    except OSError:  # git is not installed
+        return None
+    if listing.returncode != 0:
+        return None
+    names = listing.stdout.decode("utf-8", errors="replace").split("\0")
+    return [n for n in names if n]
+
+
+def _nfc(text):
+    return unicodedata.normalize("NFC", text)
+
+
+def check_tracked(tracked, file, rel):
+    """What GitHub Pages will serve is what git tracks: flag files git does not know under this exact name."""
+    if tracked is None:
+        return []
+    wanted = _nfc("/".join(x for x in rel.split("/") if x not in ("", ".")))
+    names = [_nfc(n) for n in tracked]
+    if wanted in names:
+        return []
+    lowered = wanted.lower()
+    other = next((n for n in names if n.lower() == lowered), None)
+    if other is not None:
+        return [
+            f'{file}: git zna plik jako "{other}" — zmień nazwę przez: git mv -f "{other}" "{wanted}"'
+        ]
+    return [f'{file}: plik "{wanted}" nie jest dodany do gita (git add "{wanted}")']
 
 
 def validate(root):
     root = Path(root)
     problems = []
-    maps_idx, p = load_json(root, "data/maps.json")
+    tracked = git_tracked(root)
+    maps_idx, p = load_json(root, "data/maps.json", tracked)
     problems += p
-    team, p = load_json(root, "data/team.json")
+    team, p = load_json(root, "data/team.json", tracked)
     problems += p
     if maps_idx is not None:
         problems += check_maps_index(maps_idx)
@@ -293,13 +349,13 @@ def validate(root):
         if not MAP_ID_RE.match(mid):
             continue  # already reported; not safe to use as a filename
         rel = f"data/{mid}.json"
-        data, p = load_json(root, rel)
+        data, p = load_json(root, rel, tracked)
         problems += p
         if data is None:
             continue
         problems += check_map(data, mid, team)
         for img in image_refs(data):
-            problems += check_image(root, rel, img)
+            problems += check_image(root, rel, img, tracked)
     return problems
 
 

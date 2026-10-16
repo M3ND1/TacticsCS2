@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:,">
 <title>CS2 Playbook</title>
 <style>
 :root {
@@ -105,6 +106,7 @@ const Core = (() => {
   const ME_KEY = "cs2pb:v1:me";
   const TABS = ["pistolowka", "execute", "backup", "lineupy", "notatki"];
   const VARIANTS = ["A", "B"];
+  const STRATEGY_SLOTS = ["pistol", "execute", "backup"];
   const MAP_ID_RE = /^[a-z0-9-]+$/;
   const RES_RE = /^\d+x\d+$/;
   const LINEUP_REQUIRED = ["id", "player", "name", "target", "side", "resolution", "image"];
@@ -333,10 +335,18 @@ const Core = (() => {
     else if (!isObj(data.strategies)) p('"strategies" musi być obiektem');
     else {
       const s = data.strategies;
+      for (const k of Object.keys(s)) {
+        if (!STRATEGY_SLOTS.includes(k)) p(`nieznany klucz "${k}" w "strategies" (dozwolone: ${STRATEGY_SLOTS.join(", ")})`);
+      }
       checkStrategy(s.pistol, "pistol", roleIds, p);
       checkStrategy(s.backup, "backup", roleIds, p);
       if (s.execute != null && !isObj(s.execute)) p('"strategies.execute" musi być obiektem z kluczami "A" i "B"');
-      else if (isObj(s.execute)) VARIANTS.forEach((v) => checkStrategy(s.execute[v], `execute.${v}`, roleIds, p));
+      else if (isObj(s.execute)) {
+        for (const k of Object.keys(s.execute)) {
+          if (!VARIANTS.includes(k)) p(`nieznany klucz "${k}" w "strategies.execute" (dozwolone: ${VARIANTS.join(", ")})`);
+        }
+        VARIANTS.forEach((v) => checkStrategy(s.execute[v], `execute.${v}`, roleIds, p));
+      }
     }
     if (data.lineups != null && !Array.isArray(data.lineups)) p('"lineups" musi być listą');
     const seen = new Set();
@@ -511,7 +521,7 @@ const store = {
   },
 };
 
-const app = { maps: [], team: { roles: [], players: [] }, mapCache: new Map(), state: null, problems: new Map() };
+const app = { maps: [], team: { roles: [], players: [] }, rawTeam: null, mapCache: new Map(), state: null, problems: new Map() };
 
 const TAB_LABELS = { pistolowka: "Pistolówka", execute: "Execute", backup: "Backup", lineupy: "Lineupy", notatki: "Notatki" };
 
@@ -595,7 +605,7 @@ function navigate(partial) {
 function getMap(id) {
   if (!app.mapCache.has(id)) {
     const promise = loadJson(`data/${id}.json`).then((data) => {
-      addProblems(Core.checkMap(data, id, app.team));
+      addProblems(Core.checkMap(data, id, app.rawTeam));
       return Core.normalizeMap(data);
     });
     promise.catch(() => app.mapCache.delete(id)); // retry on next navigation
@@ -644,6 +654,7 @@ async function boot() {
     const [mapsIdx, team] = await Promise.all([loadJson("data/maps.json"), loadJson("data/team.json")]);
     app.maps = (Array.isArray(mapsIdx && mapsIdx.maps) ? mapsIdx.maps : [])
       .filter((m) => m && typeof m.id === "string" && /^[a-z0-9-]+$/.test(m.id));
+    app.rawTeam = team; // checkMap needs the raw shape to know when reference checks must be skipped
     app.team = Core.normalizeTeam(team);
     addProblems([...Core.checkMapsIndex(mapsIdx), ...Core.checkTeam(team)]);
   } catch (err) {
