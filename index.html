@@ -858,6 +858,83 @@ VIEWS.pistolowka = renderStrategyTab;
 VIEWS.execute = renderStrategyTab;
 VIEWS.backup = renderStrategyTab;
 
+// ── lineups tab ──
+function lineupRow(l, mapId, file) {
+  const res = `${Core.formatResolution(l.resolution)}${l.aspect ? ` · ${l.aspect}` : ""}`;
+  const kv = (k, v) => (v ? [h("dt", null, k), h("dd", null, v)] : null);
+  return h("div", { class: "lineup" },
+    h("div", null, shot(l.image, `${l.name} · ${res}`, file)),
+    h("div", null,
+      h("div", { class: "titlebar" },
+        h("h1", null, l.name || l.id),
+        h("span", { class: "res", title: "Rozdzielczość / proporcje, dla których działa ten lineup" }, res),
+        l.example ? h("span", { class: "badge" }, "PRZYKŁAD") : null),
+      h("dl", { class: "kv" }, kv("Cel", l.target), kv("Strona", l.side), kv("Skąd", l.from), kv("Rzut", l.throw)),
+      l.instructions ? [h("h2", null, "Instrukcja"), h("p", { class: "pre" }, l.instructions)] : null,
+      l.notes ? [h("h2", null, "Notatki zespołu"), h("p", { class: "pre" }, l.notes)] : null,
+      notesWidget(mapId, `lineup:${l.id}`)));
+}
+
+VIEWS.lineupy = (main, { map, state }) => {
+  const file = `data/${state.map}.json`;
+  const mapName = (app.maps.find((m) => m.id === state.map) || {}).name || state.map;
+  const playerId = state.player || Core.defaultLineupPlayer(app.team, currentMe());
+  const { active, subs } = Core.groupPlayers(app.team);
+  const count = (id) => map.lineups.filter((l) => l.player === id).length;
+  const playerBtn = (p) => h("button", {
+    type: "button",
+    "aria-pressed": String(p.id === playerId),
+    onclick: () => navigate({ player: p.id }),
+  }, h("span", null, p.name || p.id), h("span", { class: "muted" }, String(count(p.id))));
+
+  const content = h("div");
+  main.append(h("div", { class: "layout-lineups" },
+    h("div", { class: "plist" },
+      h("h2", null, "Skład"), active.map(playerBtn),
+      subs.length ? [h("h2", null, "Rezerwowi"), subs.map(playerBtn)] : null),
+    content));
+
+  const player = app.team.players.find((p) => p.id === playerId);
+  if (!player) {
+    content.append(h("div", { class: "empty" }, "Brak graczy w data/team.json."));
+    return;
+  }
+  const mine = map.lineups.filter((l) => l.player === playerId);
+  if (!mine.length) {
+    content.append(h("div", { class: "empty" }, `Brak lineupów dla ${player.name || player.id} na ${mapName}.`, h("br"),
+      h("span", { class: "muted" }, `Dodaj je w ${file} i assets/lineups/${state.map}/${player.id}/.`)));
+    return;
+  }
+
+  const filter = { side: null, resolution: null };
+  const list = h("div");
+  const draw = () => list.replaceChildren(...Core.filterLineups(mine, filter).map((l) => lineupRow(l, state.map, file)));
+  const chips = (label, key, values, fmt) => {
+    if (values.length < 2) return null;
+    const seg = h("div", { class: "seg", role: "group", "aria-label": label });
+    for (const v of [null, ...values]) {
+      seg.append(h("button", {
+        type: "button",
+        "aria-pressed": String(filter[key] === v),
+        onclick: (e) => {
+          filter[key] = v;
+          for (const b of seg.children) b.setAttribute("aria-pressed", String(b === e.currentTarget));
+          draw();
+        },
+      }, v === null ? "Wszystkie" : fmt(v)));
+    }
+    return h("span", null, h("span", { class: "muted" }, label), seg);
+  };
+  const facets = Core.lineupFacets(mine);
+  content.append(
+    h("div", { class: "filters" },
+      chips("Strona:", "side", facets.sides, (v) => v),
+      chips("Rozdzielczość:", "resolution", facets.resolutions, Core.formatResolution)),
+    list);
+  draw();
+};
+
+
 boot();
 </script>
 </body>
