@@ -73,7 +73,17 @@ const Core = (() => {
       while (i < text.length) {
         const c = text[i];
         if (c === '"') { i++; return; }
-        if (c === "\\") { i += 2; continue; }
+        if (c === "\\") {
+          const e = text[i + 1];
+          if (e === "u") {
+            if (!/^[0-9a-fA-F]{4}$/.test(text.slice(i + 2, i + 6))) fail();
+            i += 6;
+            continue;
+          }
+          if (e === undefined || !'"\\/bfnrt'.includes(e)) fail();
+          i += 2;
+          continue;
+        }
         if (c < " ") fail();
         i++;
       }
@@ -213,7 +223,7 @@ const Core = (() => {
     if (!Array.isArray(st.assignments)) return p(`strategia "${label}": "assignments" musi być listą`);
     st.assignments.forEach((a, i) => {
       const role = isObj(a) ? a.role : undefined;
-      if (typeof role !== "string" || !roleIds.has(role)) {
+      if (roleIds && (typeof role !== "string" || !roleIds.has(role))) {
         p(`strategia "${label}": nieznana rola "${role ?? ""}" w assignments[${i}]`);
       }
     });
@@ -225,9 +235,10 @@ const Core = (() => {
     const p = (message) => out.push({ file, message });
     if (!isObj(data)) { p("oczekiwano obiektu"); return out; }
     if (data.id !== mapId) p(`"id" w pliku ("${data.id}") nie zgadza się z data/maps.json ("${mapId}")`);
+    // null when team data is unusable: reference checks are skipped (same as tools/validate.py team_ids)
     const t = normalizeTeam(team);
-    const roleIds = new Set(t.roles.map((r) => r.id));
-    const playerIds = new Set(t.players.map((x) => x.id));
+    const roleIds = isObj(team) && Array.isArray(team.roles) ? new Set(t.roles.map((r) => r.id)) : null;
+    const playerIds = isObj(team) && Array.isArray(team.players) ? new Set(t.players.map((x) => x.id)) : null;
     if (!("strategies" in data)) p('brak "strategies"');
     else if (!isObj(data.strategies)) p('"strategies" musi być obiektem');
     else {
@@ -248,7 +259,7 @@ const Core = (() => {
         seen.add(l.id);
       }
       if (isText(l.side) && l.side !== "T" && l.side !== "CT") p(`lineup "${name}": "side" musi być "T" albo "CT"`);
-      if (isText(l.player) && !playerIds.has(l.player)) p(`lineup "${name}": nieznany gracz "${l.player}"`);
+      if (isText(l.player) && playerIds && !playerIds.has(l.player)) p(`lineup "${name}": nieznany gracz "${l.player}"`);
       if (isText(l.image) && !isRelativePath(l.image)) p(`lineup "${name}": ścieżka "image" ${RELATIVE_HINT}`);
       if (isText(l.resolution) && !RES_RE.test(l.resolution)) {
         p(`lineup "${name}": "resolution" w formacie SZEROKOŚĆxWYSOKOŚĆ, np. 1920x1080`);

@@ -191,3 +191,28 @@ test("formatResolution, lineupFacets, filterLineups", () => {
   assert.deepEqual(Core.filterLineups(ls, { side: null, resolution: "1920x1080" }).map((l) => l.id), ["b", "c"]);
   assert.deepEqual(Core.filterLineups(ls, { side: "T", resolution: "1920x1080" }).map((l) => l.id), ["c"]);
 });
+
+test("parseJson reports the position of an invalid escape sequence", () => {
+  assert.throws(() => Core.parseJson('{\n  "img": "C:\\img"\n}', "f.json"),
+    { message: "f.json: błąd składni JSON — linia 2, kolumna 13" });
+  assert.throws(() => Core.parseJson('{"a":"\\u12"}', "f.json"),
+    (err) => /^f\.json: błąd składni JSON — linia 1, kolumna \d+$/.test(err.message));
+});
+
+test("parseJson still accepts valid escape sequences", () => {
+  assert.deepEqual(Core.parseJson('{"a":"x\\n\\u0041"}', "f.json"), { a: "x\nA" });
+});
+
+test("checkMap skips reference checks when team data is unusable", () => {
+  const data = {
+    id: "mirage",
+    strategies: { pistol: { title: "P", assignments: [{ role: "entry" }] } },
+    lineups: [{ id: "l1", player: "p1", name: "N", target: "T", side: "T", resolution: "1920x1080", image: "a.png" }],
+  };
+  const broken = Core.checkMap(data, "mirage", { roles: "x", players: 5 }).map((p) => p.message);
+  assert.ok(!broken.some((m) => m.includes("nieznana rola") || m.includes("nieznany gracz")), broken.join("\n"));
+  // each list is checked on its own: a valid roles list still enables the role check
+  const partial = Core.checkMap(data, "mirage", { roles: [], players: 5 }).map((p) => p.message);
+  assert.ok(partial.includes('strategia "pistol": nieznana rola "entry" w assignments[0]'), partial.join("\n"));
+  assert.ok(!partial.some((m) => m.includes("nieznany gracz")), partial.join("\n"));
+});
