@@ -88,6 +88,10 @@ th { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: upp
   <div class="seg" id="maps" role="group" aria-label="Mapa"></div>
   <span class="spacer"></span>
   <label class="me">Kim jestem: <select id="me"></select></label>
+  <button type="button" class="linkbtn" id="export-notes">Eksport notatek</button>
+  <button type="button" class="linkbtn" id="import-notes">Import notatek</button>
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+  <span id="io-status" class="muted" role="status"></span>
 </header>
 <nav class="tabs" id="tabs" role="tablist" hidden></nav>
 <main id="main"><p class="muted">Wczytywanie…</p></main>
@@ -601,6 +605,7 @@ function getMap(id) {
 }
 
 async function route() {
+  flushNoteSaves();
   const s = Core.parseHash(location.hash, {
     mapIds: app.maps.map((m) => m.id),
     playerIds: app.team.players.map((p) => p.id),
@@ -659,6 +664,107 @@ async function boot() {
 
 // ── views: each later section registers VIEWS[<tab>] ──
 const VIEWS = {};
+
+// ── personal notes ──
+const pendingNoteSaves = new Set();
+function flushNoteSaves() {
+  for (const save of [...pendingNoteSaves]) save();
+}
+window.addEventListener("pagehide", flushNoteSaves);
+
+function notesWidget(mapId, context, label = "Moje notatki") {
+  const me = currentMe();
+  const wrap = h("div", { class: "notes" }, h("h2", null, label));
+  const ta = h("textarea", {
+    "aria-label": label,
+    disabled: !me,
+    placeholder: me ? "Twoje prywatne notatki — zapisują się automatycznie w tej przeglądarce." : "Wybierz gracza w „Kim jestem”, aby pisać notatki.",
+  });
+  wrap.append(ta);
+  if (!me) return wrap;
+
+  const key = Core.noteKey(me, mapId, context);
+  ta.value = store.get(key) || "";
+  const status = h("span", { class: "muted" });
+  let timer = null;
+  const save = () => {
+    clearTimeout(timer);
+    timer = null;
+    pendingNoteSaves.delete(save);
+    const ok = ta.value.trim() ? store.set(key, ta.value) : store.remove(key);
+    status.className = ok ? "muted" : "err";
+    status.textContent = ok ? "✓ zapisano" : "✗ nie zapisano — pamięć przeglądarki niedostępna";
+  };
+  ta.addEventListener("input", () => {
+    status.textContent = "";
+    clearTimeout(timer);
+    timer = setTimeout(save, 400);
+    pendingNoteSaves.add(save);
+  });
+  ta.addEventListener("blur", () => { if (timer) save(); });
+
+  const clearBtn = h("button", { type: "button", class: "linkbtn" }, "Wyczyść");
+  const confirmBox = h("span", { hidden: true }, "Na pewno? ",
+    h("button", { type: "button", class: "linkbtn", onclick: () => { ta.value = ""; save(); confirmBox.hidden = true; clearBtn.hidden = false; } }, "Tak"),
+    " ",
+    h("button", { type: "button", class: "linkbtn", onclick: () => { confirmBox.hidden = true; clearBtn.hidden = false; } }, "Nie"));
+  clearBtn.addEventListener("click", () => { clearBtn.hidden = true; confirmBox.hidden = false; });
+  wrap.append(h("div", { class: "bar" }, status, h("span", { class: "spacer" }), clearBtn, confirmBox));
+  return wrap;
+}
+
+VIEWS.notatki = (main, { state }) => {
+  const mapName = (app.maps.find((m) => m.id === state.map) || {}).name || state.map;
+  main.append(
+    h("div", { class: "titlebar" }, h("h1", null, `Notatki — ${mapName}`)),
+    h("p", { class: "muted" }, "Prywatne notatki do całej mapy. Zapisują się tylko w tej przeglądarce na tym urządzeniu — użyj eksportu, aby je przenieść."),
+    notesWidget(state.map, "map", "Moje notatki do mapy"),
+  );
+};
+
+function ioStatus(message, isError) {
+  const el = $("#io-status");
+  el.className = isError ? "err" : "muted";
+  el.textContent = message;
+}
+
+function exportNotes() {
+  flushNoteSaves();
+  const now = new Date();
+  const data = Core.buildNotesExport(store.entries(Core.NOTE_PREFIX), now);
+  const n = Object.keys(data.notes).length;
+  if (!n) return ioStatus("Brak notatek do eksportu.");
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  const a = h("a", { href: url, download: Core.exportFilename(now) });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  ioStatus(`Wyeksportowano ${n} ${Core.plural(n, "notatkę", "notatki", "notatek")}.`);
+}
+
+async function importNotes(file) {
+  let text;
+  try { text = await file.text(); } catch { return ioStatus("Nie udało się odczytać pliku.", true); }
+  const result = Core.parseNotesImport(text);
+  if (!result.ok) return ioStatus(result.error, true);
+  let saved = 0, failed = 0;
+  for (const [k, v] of Object.entries(result.notes)) {
+    if (!v.trim()) continue;
+    if (store.set(k, v)) saved++; else failed++;
+  }
+  if (failed) ioStatus(`Zaimportowano ${saved}, nie zapisano ${failed} — pamięć przeglądarki niedostępna.`, true);
+  else ioStatus(`Zaimportowano ${saved} ${Core.plural(saved, "notatkę", "notatki", "notatek")}.`);
+  route();
+}
+
+$("#export-notes").addEventListener("click", exportNotes);
+$("#import-notes").addEventListener("click", () => $("#import-file").click());
+$("#import-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  e.target.value = ""; // allow importing the same file again
+  if (file) importNotes(file);
+});
 
 boot();
 </script>
