@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>CS2 Playbook</title>
+</head>
+<body>
+<script id="core">
+// Pure logic, no DOM. Loaded by tools/test_core.mjs for unit tests.
+const Core = (() => {
+  "use strict";
+  const NOTE_PREFIX = "cs2pb:v1:notes:";
+  const ME_KEY = "cs2pb:v1:me";
+  const TABS = ["pistolowka", "execute", "backup", "lineupy", "notatki"];
+  const VARIANTS = ["A", "B"];
+  const MAP_ID_RE = /^[a-z0-9-]+$/;
+  const RES_RE = /^\d+x\d+$/;
+  const LINEUP_REQUIRED = ["id", "player", "name", "target", "side", "resolution", "image"];
+  const RELATIVE_HINT = "musi być względna (bez / na początku, bez .., bez http)";
+
+  const isObj = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
+  const arr = (x) => (Array.isArray(x) ? x : []);
+  const isText = (x) => typeof x === "string" && x.trim() !== "";
+  const isRelativePath = (x) =>
+    isText(x) && !x.startsWith("/") && !/^[A-Za-z][A-Za-z0-9+.-]*:/.test(x) && !x.split("/").includes("..");
+
+  // ── JSON with reliable error positions (V8 omits them for some errors) ──
+  function findJsonErrorOffset(text) {
+    let i = 0;
+    const fail = () => { throw i; };
+    const ws = () => { while (i < text.length && " \t\n\r".includes(text[i])) i++; };
+    function value() {
+      ws();
+      const c = text[i];
+      if (c === "{") return object();
+      if (c === "[") return array();
+      if (c === '"') return string();
+      if (c === "-" || (c >= "0" && c <= "9")) return number();
+      for (const lit of ["true", "false", "null"]) {
+        if (text.startsWith(lit, i)) { i += lit.length; return; }
+      }
+      fail();
+    }
+    function object() {
+      i++; ws();
+      if (text[i] === "}") { i++; return; }
+      for (;;) {
+        ws();
+        if (text[i] !== '"') fail();
+        string(); ws();
+        if (text[i] !== ":") fail();
+        i++;
+        value(); ws();
+        if (text[i] === ",") { i++; continue; }
+        if (text[i] === "}") { i++; return; }
+        fail();
+      }
+    }
+    function array() {
+      i++; ws();
+      if (text[i] === "]") { i++; return; }
+      for (;;) {
+        value(); ws();
+        if (text[i] === ",") { i++; continue; }
+        if (text[i] === "]") { i++; return; }
+        fail();
+      }
+    }
+    function string() {
+      i++;
+      while (i < text.length) {
+        const c = text[i];
+        if (c === '"') { i++; return; }
+        if (c === "\\") { i += 2; continue; }
+        if (c < " ") fail();
+        i++;
+      }
+      fail();
+    }
+    function number() {
+      const m = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/.exec(text.slice(i));
+      if (!m) fail();
+      i += m[0].length;
+    }
+    try {
+      value(); ws();
+      if (i < text.length) fail();
+      return null;
+    } catch (pos) {
+      if (typeof pos === "number") return pos;
+      throw pos;
+    }
+  }
+
+  function parseJson(text, path) {
+    const clean = String(text).replace(/^﻿/, "");
+    try {
+      return JSON.parse(clean);
+    } catch {
+      const offset = findJsonErrorOffset(clean);
+      let where = "";
+      if (offset !== null) {
+        const lines = clean.slice(0, offset).split("\n");
+        where = ` — linia ${lines.length}, kolumna ${lines[lines.length - 1].length + 1}`;
+      }
+      throw new Error(`${path}: błąd składni JSON${where}`);
+    }
+  }
+
+  function plural(n, one, few, many) {
+    if (n === 1) return one;
+    const d = n % 10, dd = n % 100;
+    return d >= 2 && d <= 4 && !(dd >= 12 && dd <= 14) ? few : many;
+  }
+
+  // ── normalisation: shapes the UI can rely on ──
+  function normalizeTeam(team) {
+    const t = isObj(team) ? team : {};
+    return {
+      roles: arr(t.roles).filter((r) => isObj(r) && isText(r.id)),
+      players: arr(t.players).filter((p) => isObj(p) && isText(p.id)),
+    };
+  }
+
+  function normalizeStrategy(s) {
+    if (!isObj(s)) return null;
+    return {
+      ...s,
+      steps: arr(s.steps).filter((x) => typeof x === "string"),
+      assignments: arr(s.assignments).filter(isObj),
+    };
+  }
+
+  function normalizeMap(data) {
+    const d = isObj(data) ? data : {};
+    const s = isObj(d.strategies) ? d.strategies : {};
+    const ex = isObj(s.execute) ? s.execute : {};
+    return {
+      name: d.name,
+      strategies: {
+        pistol: normalizeStrategy(s.pistol),
+        backup: normalizeStrategy(s.backup),
+        execute: { A: normalizeStrategy(ex.A), B: normalizeStrategy(ex.B) },
+      },
+      lineups: arr(d.lineups).filter((l) => isObj(l) && isText(l.id)),
+    };
+  }
+
+  // ── data checks (mirrors tools/validate.py, minus file existence) ──
+  function checkMapsIndex(data) {
+    const file = "data/maps.json";
+    const out = [];
+    const p = (message) => out.push({ file, message });
+    if (!isObj(data) || !Array.isArray(data.maps)) { p('oczekiwano obiektu z listą "maps"'); return out; }
+    const seen = new Set();
+    data.maps.forEach((m, i) => {
+      if (!isObj(m) || !isText(m.id)) return p(`maps[${i}] musi mieć "id" (tekst)`);
+      if (!MAP_ID_RE.test(m.id)) p(`id mapy "${m.id}" może zawierać tylko a-z, 0-9 i -`);
+      if (seen.has(m.id)) p(`zduplikowane id mapy "${m.id}"`);
+      seen.add(m.id);
+      if (!isText(m.name)) p(`mapa "${m.id}" nie ma "name"`);
+    });
+    return out;
+  }
+
+  function checkTeam(team) {
+    const file = "data/team.json";
+    const out = [];
+    const p = (message) => out.push({ file, message });
+    if (!isObj(team)) { p('oczekiwano obiektu z listami "roles" i "players"'); return out; }
+    if (!Array.isArray(team.roles)) p('brak listy "roles"');
+    if (!Array.isArray(team.players)) p('brak listy "players"');
+    const roleIds = new Set();
+    arr(team.roles).forEach((r, i) => {
+      if (!isObj(r) || !isText(r.id)) return p(`roles[${i}] musi mieć "id" (tekst)`);
+      if (roleIds.has(r.id)) p(`zduplikowane id roli "${r.id}"`);
+      roleIds.add(r.id);
+      if (!isText(r.name)) p(`rola "${r.id}" nie ma "name"`);
+    });
+    const playerIds = new Set();
+    const holders = new Map(); // roleId -> { active: [], sub: [] }
+    arr(team.players).forEach((pl, i) => {
+      if (!isObj(pl) || !isText(pl.id)) return p(`players[${i}] musi mieć "id" (tekst)`);
+      if (playerIds.has(pl.id)) p(`zduplikowane id gracza "${pl.id}"`);
+      playerIds.add(pl.id);
+      if (!isText(pl.name)) p(`gracz "${pl.id}" nie ma "name"`);
+      const statusOk = pl.status === "active" || pl.status === "sub";
+      if (!statusOk) p(`gracz "${pl.id}": "status" musi być "active" albo "sub"`);
+      if (pl.role == null) return;
+      if (typeof pl.role !== "string" || !roleIds.has(pl.role)) return p(`gracz "${pl.id}": nieznana rola "${pl.role}"`);
+      if (!statusOk) return;
+      if (!holders.has(pl.role)) holders.set(pl.role, { active: [], sub: [] });
+      holders.get(pl.role)[pl.status].push(pl.id);
+    });
+    for (const [role, h] of holders) {
+      if (h.active.length > 1) p(`rola "${role}" ma kilku aktywnych graczy: ${h.active.join(", ")}`);
+      if (h.sub.length > 1) p(`rola "${role}" ma kilku rezerwowych: ${h.sub.join(", ")}`);
+    }
+    return out;
+  }
+
+  function checkStrategy(st, label, roleIds, p) {
+    if (st == null) return;
+    if (!isObj(st)) return p(`strategia "${label}" musi być obiektem albo null`);
+    if (!isText(st.title)) p(`strategia "${label}" nie ma "title"`);
+    if (st.image != null && !isRelativePath(st.image)) p(`strategia "${label}": ścieżka "image" ${RELATIVE_HINT}`);
+    if (st.steps != null && !(Array.isArray(st.steps) && st.steps.every((s) => typeof s === "string"))) {
+      p(`strategia "${label}": "steps" musi być listą tekstów`);
+    }
+    if (st.assignments == null) return;
+    if (!Array.isArray(st.assignments)) return p(`strategia "${label}": "assignments" musi być listą`);
+    st.assignments.forEach((a, i) => {
+      const role = isObj(a) ? a.role : undefined;
+      if (typeof role !== "string" || !roleIds.has(role)) {
+        p(`strategia "${label}": nieznana rola "${role ?? ""}" w assignments[${i}]`);
+      }
+    });
+  }
+
+  function checkMap(data, mapId, team) {
+    const file = `data/${mapId}.json`;
+    const out = [];
+    const p = (message) => out.push({ file, message });
+    if (!isObj(data)) { p("oczekiwano obiektu"); return out; }
+    if (data.id !== mapId) p(`"id" w pliku ("${data.id}") nie zgadza się z data/maps.json ("${mapId}")`);
+    const t = normalizeTeam(team);
+    const roleIds = new Set(t.roles.map((r) => r.id));
+    const playerIds = new Set(t.players.map((x) => x.id));
+    if (!("strategies" in data)) p('brak "strategies"');
+    else if (!isObj(data.strategies)) p('"strategies" musi być obiektem');
+    else {
+      const s = data.strategies;
+      checkStrategy(s.pistol, "pistol", roleIds, p);
+      checkStrategy(s.backup, "backup", roleIds, p);
+      if (s.execute != null && !isObj(s.execute)) p('"strategies.execute" musi być obiektem z kluczami "A" i "B"');
+      else if (isObj(s.execute)) VARIANTS.forEach((v) => checkStrategy(s.execute[v], `execute.${v}`, roleIds, p));
+    }
+    if (data.lineups != null && !Array.isArray(data.lineups)) p('"lineups" musi być listą');
+    const seen = new Set();
+    arr(data.lineups).forEach((l, i) => {
+      if (!isObj(l)) return p(`lineups[${i}] musi być obiektem`);
+      const name = isText(l.id) ? l.id : `#${i}`;
+      for (const k of LINEUP_REQUIRED) if (!isText(l[k])) p(`lineup "${name}": brak pola "${k}"`);
+      if (isText(l.id)) {
+        if (seen.has(l.id)) p(`zduplikowane id lineupu "${l.id}"`);
+        seen.add(l.id);
+      }
+      if (isText(l.side) && l.side !== "T" && l.side !== "CT") p(`lineup "${name}": "side" musi być "T" albo "CT"`);
+      if (isText(l.player) && !playerIds.has(l.player)) p(`lineup "${name}": nieznany gracz "${l.player}"`);
+      if (isText(l.image) && !isRelativePath(l.image)) p(`lineup "${name}": ścieżka "image" ${RELATIVE_HINT}`);
+      if (isText(l.resolution) && !RES_RE.test(l.resolution)) {
+        p(`lineup "${name}": "resolution" w formacie SZEROKOŚĆxWYSOKOŚĆ, np. 1920x1080`);
+      }
+    });
+    return out;
+  }
+
+  // ── roster ──
+  function resolveRole(team, roleId) {
+    const holders = team.players.filter((p) => p.role === roleId);
+    const active = holders.filter((p) => p.status === "active");
+    if (active.length) return { kind: "active", players: active };
+    const subs = holders.filter((p) => p.status === "sub");
+    if (subs.length) return { kind: "sub", players: subs };
+    return { kind: "none", players: [] };
+  }
+
+  function groupPlayers(team) {
+    return {
+      active: team.players.filter((p) => p.status !== "sub"),
+      subs: team.players.filter((p) => p.status === "sub"),
+    };
+  }
+
+  function validMe(id, team) {
+    return team.players.some((p) => p.id === id) ? id : null;
+  }
+
+  function defaultLineupPlayer(team, meId) {
+    if (validMe(meId, team)) return meId;
+    const { active } = groupPlayers(team);
+    if (active.length) return active[0].id;
+    return team.players.length ? team.players[0].id : null;
+  }
+
+  // ── routing: #<map>/<tab>[/<variant|player>] ──
+  function parseHash(hash, { mapIds, playerIds }) {
+    const parts = String(hash || "").replace(/^#\/?/, "").split("/").map((x) => {
+      try { return decodeURIComponent(x); } catch { return ""; }
+    });
+    const map = mapIds.includes(parts[0]) ? parts[0] : mapIds[0];
+    const tab = TABS.includes(parts[1]) ? parts[1] : TABS[0];
+    const v = (parts[2] || "").toUpperCase();
+    const variant = tab === "execute" && VARIANTS.includes(v) ? v : "A";
+    const player = tab === "lineupy" && playerIds.includes(parts[2]) ? parts[2] : null;
+    return { map, tab, variant, player };
+  }
+
+  function buildHash({ map, tab, variant, player }) {
+    let hash = `#${encodeURIComponent(map)}/${tab}`;
+    if (tab === "execute") hash += `/${variant || "A"}`;
+    else if (tab === "lineupy" && player) hash += `/${encodeURIComponent(player)}`;
+    return hash;
+  }
+
+  // ── personal notes ──
+  const noteKey = (playerId, mapId, context) => `${NOTE_PREFIX}${playerId}:${mapId}:${context}`;
+
+  function noteContext(tab, variant) {
+    if (tab === "pistolowka") return "pistol";
+    if (tab === "execute") return `execute-${variant}`;
+    if (tab === "notatki") return "map";
+    return tab;
+  }
+
+  function buildNotesExport(entries, date) {
+    const notes = {};
+    for (const [k, v] of entries) if (k.startsWith(NOTE_PREFIX) && typeof v === "string") notes[k] = v;
+    return { app: "cs2-playbook", version: 1, exportedAt: date.toISOString(), notes };
+  }
+
+  function parseNotesImport(text) {
+    let data;
+    try { data = JSON.parse(String(text).replace(/^﻿/, "")); }
+    catch { return { ok: false, error: "Plik nie jest poprawnym JSON-em." }; }
+    if (!isObj(data) || data.app !== "cs2-playbook" || data.version !== 1 || !isObj(data.notes)) {
+      return { ok: false, error: "To nie jest plik eksportu notatek CS2 Playbook (wersja 1)." };
+    }
+    const notes = {};
+    for (const [k, v] of Object.entries(data.notes)) {
+      if (!k.startsWith(NOTE_PREFIX)) return { ok: false, error: `Nieprawidłowy klucz notatki: ${k}` };
+      if (typeof v !== "string") return { ok: false, error: `Notatka ${k} nie jest tekstem.` };
+      notes[k] = v;
+    }
+    return { ok: true, notes };
+  }
+
+  function exportFilename(date) {
+    const pad = (n) => String(n).padStart(2, "0");
+    return `cs2-notatki-${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}.json`;
+  }
+
+  // ── lineups ──
+  function formatResolution(res) {
+    if (!isText(res)) return "?";
+    return res.replace(/^(\d+)\s*[xX×]\s*(\d+)$/, "$1×$2");
+  }
+
+  function lineupFacets(lineups) {
+    const uniq = (xs) => [...new Set(xs.filter(isText))];
+    const area = (r) => r.split("x").map(Number);
+    return {
+      sides: uniq(lineups.map((l) => l.side)).sort(),
+      resolutions: uniq(lineups.map((l) => l.resolution)).sort((a, b) => {
+        const [aw, ah] = area(a), [bw, bh] = area(b);
+        return aw - bw || ah - bh || a.localeCompare(b);
+      }),
+    };
+  }
+
+  function filterLineups(lineups, { side, resolution }) {
+    return lineups.filter((l) => (side == null || l.side === side) && (resolution == null || l.resolution === resolution));
+  }
+
+  return {
+    NOTE_PREFIX, ME_KEY, TABS,
+    parseJson, plural, normalizeTeam, normalizeMap,
+    checkMapsIndex, checkTeam, checkMap,
+    resolveRole, groupPlayers, validMe, defaultLineupPlayer,
+    parseHash, buildHash,
+    noteKey, noteContext, buildNotesExport, parseNotesImport, exportFilename,
+    formatResolution, lineupFacets, filterLineups,
+  };
+})();
+</script>
+</body>
+</html>
