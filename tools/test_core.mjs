@@ -109,8 +109,8 @@ test("checkMap flags references and formats", () => {
       backup: null,
     },
     lineups: [
-      { id: "l1", player: "p9", name: "N", target: "T", side: "t", resolution: "1920×1080", image: "/abs.png" },
-      { id: "l1", player: "p1", name: "N", side: "T", resolution: "1920x1080", image: "a.png" },
+      { id: "l1", player: "p9", name: "N", target: "T", side: "t", type: "he", aspect: "1920x1080", image: "/abs.png" },
+      { id: "l1", player: "p1", name: "N", side: "T", type: "smoke", aspect: "16:9", resolution: "1920x1080", image: "a.png" },
     ],
   };
   const out = Core.checkMap(data, "mirage", TEAM);
@@ -123,7 +123,9 @@ test("checkMap flags references and formats", () => {
     'strategia "execute.B": "steps" musi być listą tekstów',
     'lineup "l1": nieznany gracz "p9"',
     'lineup "l1": "side" musi być "T" albo "CT"',
-    'lineup "l1": "resolution" w formacie SZEROKOŚĆxWYSOKOŚĆ, np. 1920x1080',
+    'lineup "l1": "type" musi być jednym z: smoke, flash, molotov',
+    'lineup "l1": "aspect" musi być jednym z: 4:3, 4:3 stretched, 16:9, 21:9',
+    'lineup "l1": pole "resolution" nie jest już używane — użyj "aspect"',
     'lineup "l1": ścieżka "image" musi być względna (bez / na początku, bez .., bez http)',
     'zduplikowane id lineupu "l1"',
     'lineup "l1": brak pola "target"',
@@ -178,18 +180,70 @@ test("exportFilename uses the local date", () => {
   assert.equal(Core.exportFilename(new Date(2026, 2, 5, 23, 59)), "cs2-notatki-2026-03-05.json");
 });
 
-test("formatResolution, lineupFacets, filterLineups", () => {
-  assert.equal(Core.formatResolution("1920x1080"), "1920×1080");
-  assert.equal(Core.formatResolution(""), "?");
+test("formatAspect and aspectMismatch", () => {
+  assert.equal(Core.formatAspect("4:3 stretched"), "4:3 rozciągnięte");
+  assert.equal(Core.formatAspect("16:9"), "16:9");
+  assert.equal(Core.formatAspect(null), "?");
+  assert.equal(Core.aspectMismatch("4:3", "16:9"), true);
+  assert.equal(Core.aspectMismatch("4:3", "4:3 stretched"), true);
+  assert.equal(Core.aspectMismatch("16:9", "16:9"), false);
+  assert.equal(Core.aspectMismatch("16:9", null), false);
+  assert.equal(Core.aspectMismatch(undefined, "16:9"), false);
+});
+
+test("lineupFacets and filterLineups use type, side and aspect", () => {
   const ls = [
-    { id: "a", side: "T", resolution: "2560x1440" },
-    { id: "b", side: "CT", resolution: "1920x1080" },
-    { id: "c", side: "T", resolution: "1920x1080" },
+    { id: "a", type: "molotov", side: "T", aspect: "21:9" },
+    { id: "b", type: "smoke", side: "CT", aspect: "16:9" },
+    { id: "c", type: "smoke", side: "T", aspect: "4:3 stretched" },
   ];
-  assert.deepEqual(Core.lineupFacets(ls), { sides: ["CT", "T"], resolutions: ["1920x1080", "2560x1440"] });
-  assert.deepEqual(Core.filterLineups(ls, { side: "T", resolution: null }).map((l) => l.id), ["a", "c"]);
-  assert.deepEqual(Core.filterLineups(ls, { side: null, resolution: "1920x1080" }).map((l) => l.id), ["b", "c"]);
-  assert.deepEqual(Core.filterLineups(ls, { side: "T", resolution: "1920x1080" }).map((l) => l.id), ["c"]);
+  assert.deepEqual(Core.lineupFacets(ls), { types: ["smoke", "molotov"], sides: ["T", "CT"], aspects: ["4:3 stretched", "16:9", "21:9"] });
+  assert.deepEqual(Core.filterLineups(ls, { type: "smoke", side: null, aspect: null }).map((l) => l.id), ["b", "c"]);
+  assert.deepEqual(Core.filterLineups(ls, { type: null, side: "T", aspect: null }).map((l) => l.id), ["a", "c"]);
+  assert.deepEqual(Core.filterLineups(ls, { type: "smoke", side: "T", aspect: "4:3 stretched" }).map((l) => l.id), ["c"]);
+  assert.deepEqual(Core.filterLineups(ls, {}).map((l) => l.id), ["a", "b", "c"]);
+});
+
+test("utilityTokens colours grenade words", () => {
+  assert.deepEqual(Core.utilityTokens("2× flash + smoke'a, molo na site"), [
+    { text: "2× ", type: null },
+    { text: "flash", type: "flash" },
+    { text: " + ", type: null },
+    { text: "smoke'a", type: "smoke" },
+    { text: ", ", type: null },
+    { text: "molo", type: "molotov" },
+    { text: " na site", type: null },
+  ]);
+  assert.deepEqual(Core.utilityTokens("Flashe i Molotov, incendiary"), [
+    { text: "Flashe", type: "flash" },
+    { text: " i ", type: null },
+    { text: "Molotov", type: "molotov" },
+    { text: ", ", type: null },
+    { text: "incendiary", type: "molotov" },
+  ]);
+  assert.deepEqual(Core.utilityTokens(""), []);
+  assert.deepEqual(Core.utilityTokens("brak"), [{ text: "brak", type: null }]);
+});
+
+test("checkTeam validates player aspect", () => {
+  const msgs = Core.checkTeam({
+    roles: [],
+    players: [
+      { id: "a", name: "A", role: null, status: "active", aspect: "4:3 stretched" },
+      { id: "b", name: "B", role: null, status: "active", aspect: null },
+      { id: "c", name: "C", role: null, status: "sub", aspect: "16x9" },
+    ],
+  }).map((p) => p.message);
+  assert.deepEqual(msgs, ['gracz "c": "aspect" musi być jednym z: 4:3, 4:3 stretched, 16:9, 21:9 albo null']);
+});
+
+test("checkMapsIndex validates accent and mapAccent returns safe colours", () => {
+  assert.deepEqual(Core.checkMapsIndex({ maps: [{ id: "a", name: "A", accent: "#12abEF" }] }), []);
+  const msgs = Core.checkMapsIndex({ maps: [{ id: "a", name: "A", accent: "red; x" }] }).map((p) => p.message);
+  assert.deepEqual(msgs, ['mapa "a": "accent" musi być kolorem w formacie #RRGGBB']);
+  assert.equal(Core.mapAccent({ accent: "#12abEF" }), "#12abEF");
+  assert.equal(Core.mapAccent({ accent: "red; x" }), null);
+  assert.equal(Core.mapAccent(undefined), null);
 });
 
 test("parseJson reports the position of an invalid escape sequence", () => {
@@ -207,7 +261,7 @@ test("checkMap skips reference checks when team data is unusable", () => {
   const data = {
     id: "mirage",
     strategies: { pistol: { title: "P", assignments: [{ role: "entry" }] } },
-    lineups: [{ id: "l1", player: "p1", name: "N", target: "T", side: "T", resolution: "1920x1080", image: "a.png" }],
+    lineups: [{ id: "l1", player: "p1", name: "N", target: "T", side: "T", type: "smoke", aspect: "16:9", image: "a.png" }],
   };
   const broken = Core.checkMap(data, "mirage", { roles: "x", players: 5 }).map((p) => p.message);
   assert.ok(!broken.some((m) => m.includes("nieznana rola") || m.includes("nieznany gracz")), broken.join("\n"));

@@ -16,9 +16,11 @@ import unicodedata
 from pathlib import Path
 
 MAP_ID_RE = re.compile(r"^[a-z0-9-]+$")
-RES_RE = re.compile(r"^\d+x\d+$")
+HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
-LINEUP_REQUIRED = ("id", "player", "name", "target", "side", "resolution", "image")
+LINEUP_REQUIRED = ("id", "player", "name", "target", "side", "type", "aspect", "image")
+ASPECTS = ("4:3", "4:3 stretched", "16:9", "21:9")
+TYPES = ("smoke", "flash", "molotov")
 STRATEGY_SLOTS = ("pistol", "execute", "backup")
 VARIANTS = ("A", "B")
 RELATIVE_HINT = "musi być względna (bez / na początku, bez .., bez http)"
@@ -78,6 +80,8 @@ def check_maps_index(data):
         seen.add(mid)
         if not is_text(m.get("name")):
             out.append(f'{f}: mapa "{mid}" nie ma "name"')
+        if m.get("accent") is not None and not (isinstance(m["accent"], str) and HEX_RE.match(m["accent"])):
+            out.append(f'{f}: mapa "{mid}": "accent" musi być kolorem w formacie #RRGGBB')
     return out
 
 
@@ -132,6 +136,8 @@ def check_team(team):
         status = pl.get("status")
         if status not in ("active", "sub"):
             p(f'gracz "{pid}": "status" musi być "active" albo "sub"')
+        if pl.get("aspect") is not None and pl["aspect"] not in ASPECTS:
+            p(f'gracz "{pid}": "aspect" musi być jednym z: {", ".join(ASPECTS)} albo null')
         role = pl.get("role")
         if role is None:
             continue
@@ -234,8 +240,12 @@ def check_map(data, map_id, team):
             p(f'lineup "{name}": nieznany gracz "{l["player"]}"')
         if is_text(l.get("image")) and not is_relative_path(l["image"]):
             p(f'lineup "{name}": ścieżka "image" {RELATIVE_HINT}')
-        if is_text(l.get("resolution")) and not RES_RE.match(l["resolution"]):
-            p(f'lineup "{name}": "resolution" w formacie SZEROKOŚĆxWYSOKOŚĆ, np. 1920x1080')
+        if is_text(l.get("type")) and l["type"] not in TYPES:
+            p(f'lineup "{name}": "type" musi być jednym z: {", ".join(TYPES)}')
+        if is_text(l.get("aspect")) and l["aspect"] not in ASPECTS:
+            p(f'lineup "{name}": "aspect" musi być jednym z: {", ".join(ASPECTS)}')
+        if "resolution" in l:
+            p(f'lineup "{name}": pole "resolution" nie jest już używane — użyj "aspect"')
     return out
 
 

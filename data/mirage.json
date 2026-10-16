@@ -13,11 +13,46 @@
         "Krok 3 — opisz plan po zdobyciu lub utracie przewagi."
       ],
       "assignments": [
-        { "role": "entry",   "position": "np. pozycja startowa", "utility": "np. flash", "action": "opis zadania", "timing": "np. 0:10", "notes": "" },
-        { "role": "second",  "position": "np. pozycja startowa", "utility": "np. smoke", "action": "opis zadania", "timing": "po wejściu entry", "notes": "" },
-        { "role": "support", "position": "np. pozycja startowa", "utility": "np. smoke", "action": "opis zadania", "timing": "", "notes": "" },
-        { "role": "lurk",    "position": "np. pozycja startowa", "utility": "", "action": "opis zadania", "timing": "", "notes": "" },
-        { "role": "awp",     "position": "np. pozycja startowa", "utility": "", "action": "opis zadania", "timing": "", "notes": "" }
+        {
+          "role": "entry",
+          "position": "np. pozycja startowa",
+          "utility": "np. flash",
+          "action": "opis zadania",
+          "timing": "np. 0:10",
+          "notes": ""
+        },
+        {
+          "role": "second",
+          "position": "np. pozycja startowa",
+          "utility": "np. smoke",
+          "action": "opis zadania",
+          "timing": "po wejściu entry",
+          "notes": ""
+        },
+        {
+          "role": "support",
+          "position": "np. pozycja startowa",
+          "utility": "np. smoke",
+          "action": "opis zadania",
+          "timing": "",
+          "notes": ""
+        },
+        {
+          "role": "lurk",
+          "position": "np. pozycja startowa",
+          "utility": "",
+          "action": "opis zadania",
+          "timing": "",
+          "notes": ""
+        },
+        {
+          "role": "awp",
+          "position": "np. pozycja startowa",
+          "utility": "",
+          "action": "opis zadania",
+          "timing": "",
+          "notes": ""
+        }
       ],
       "notes": "Miejsce na wspólne notatki zespołu do tej strategii."
     },
@@ -34,11 +69,46 @@
           "Krok 4 — plant i ustawienie po plancie."
         ],
         "assignments": [
-          { "role": "entry",   "position": "np. pozycja", "utility": "np. 2× flash", "action": "pierwszy na site", "timing": "1.", "notes": "trade: second" },
-          { "role": "second",  "position": "np. pozycja", "utility": "np. smoke", "action": "drugi na site", "timing": "2.", "notes": "" },
-          { "role": "support", "position": "np. pozycja", "utility": "np. smoke + molotov", "action": "utility z daleka", "timing": "przed wejściem", "notes": "" },
-          { "role": "lurk",    "position": "np. pozycja", "utility": "", "action": "kontrola rotacji", "timing": "", "notes": "" },
-          { "role": "awp",     "position": "np. pozycja", "utility": "np. flash", "action": "pick przed executem", "timing": "", "notes": "" }
+          {
+            "role": "entry",
+            "position": "np. pozycja",
+            "utility": "np. 2× flash",
+            "action": "pierwszy na site",
+            "timing": "1.",
+            "notes": "trade: second"
+          },
+          {
+            "role": "second",
+            "position": "np. pozycja",
+            "utility": "np. smoke",
+            "action": "drugi na site",
+            "timing": "2.",
+            "notes": ""
+          },
+          {
+            "role": "support",
+            "position": "np. pozycja",
+            "utility": "np. smoke + molotov",
+            "action": "utility z daleka",
+            "timing": "przed wejściem",
+            "notes": ""
+          },
+          {
+            "role": "lurk",
+            "position": "np. pozycja",
+            "utility": "",
+            "action": "kontrola rotacji",
+            "timing": "",
+            "notes": ""
+          },
+          {
+            "role": "awp",
+            "position": "np. pozycja",
+            "utility": "np. flash",
+            "action": "pick przed executem",
+            "timing": "",
+            "notes": ""
+          }
         ],
         "notes": ""
       },
@@ -51,55 +121,69 @@
       "image": "assets/tactics/mirage/backup.svg",
       "steps": [],
       "assignments": [
-        { "role": "entry", "position": "np. pozycja", "utility": "", "action": "opis zadania", "timing": "", "notes": "" },
-        { "role": "awp",   "position": "np. pozycja", "utility": "", "action": "opis zadania", "timing": "", "notes": "" }
+        {
+          "role": "entry",
+          "position": "np. pozycja",
+          "utility": "",
+          "action": "opis zadania",
+          "timing": "",
+          "notes": ""
+        },
+        {
+          "role": "awp",
+          "position": "np. pozycja",
+          "utility": "",
+          "action": "opis zadania",
+          "timing": "",
+          "notes": ""
+        }
       ],
       "notes": ""
     }
   },
   "lineups": [
     {
-      "id": "example-smoke-1",
+      "id": "example-smoke-window",
       "example": true,
-      "player": "p1",
-      "name": "PRZYKŁAD smoke 1",
+      "player": "mendi",
+      "type": "smoke",
+      "name": "PRZYKŁAD smoke",
       "target": "np. Window",
       "side": "T",
       "from": "np. T spawn",
       "throw": "np. jumpthrow",
-      "resolution": "1920x1080",
       "aspect": "16:9",
-      "image": "assets/lineups/mirage/p1/example-smoke-1-1920x1080.svg",
+      "image": "assets/lineups/mirage/mendi/example-smoke-window-16x9.svg",
       "instructions": "Opisz, gdzie stanąć i gdzie celować.",
       "notes": ""
     },
     {
-      "id": "example-smoke-2",
+      "id": "example-flash-a",
       "example": true,
-      "player": "p1",
-      "name": "PRZYKŁAD smoke 2",
-      "target": "np. CT",
+      "player": "mendi",
+      "type": "flash",
+      "name": "PRZYKŁAD flash",
+      "target": "np. A site",
       "side": "T",
-      "from": "np. T ramp",
+      "from": "np. Palace",
       "throw": "np. lewy przycisk",
-      "resolution": "2560x1440",
-      "aspect": "16:9",
-      "image": "assets/lineups/mirage/p1/example-smoke-2-2560x1440.svg",
+      "aspect": "4:3 stretched",
+      "image": "assets/lineups/mirage/mendi/example-flash-a-4x3-stretched.svg",
       "instructions": "",
       "notes": ""
     },
     {
-      "id": "example-smoke-3",
+      "id": "example-molotov-jungle",
       "example": true,
-      "player": "p2",
-      "name": "PRZYKŁAD smoke 3",
-      "target": "np. Top mid",
-      "side": "CT",
-      "from": "np. CT spawn",
-      "resolution": "1280x960",
-      "aspect": "4:3",
-      "image": "assets/lineups/mirage/p2/example-smoke-3-1280x960.svg",
-      "instructions": "Lineup dla 4:3 — na 16:9 nie zadziała tak samo.",
+      "player": "teey",
+      "type": "molotov",
+      "name": "PRZYKŁAD molotov",
+      "target": "np. Jungle",
+      "side": "T",
+      "from": "np. Connector",
+      "aspect": "21:9",
+      "image": "assets/lineups/mirage/teey/example-molotov-jungle-21x9.svg",
+      "instructions": "Lineup pod 21:9 — na innych proporcjach punkt celowania będzie inny.",
       "notes": ""
     }
   ]

@@ -1,0 +1,13 @@
+{
+  "id": "dust2",
+  "name": "Dust II",
+  "strategies": {
+    "pistol": null,
+    "execute": {
+      "A": null,
+      "B": null
+    },
+    "backup": null
+  },
+  "lineups": []
+}

@@ -40,8 +40,8 @@ def mirage():
         "lineups": [
             {
                 "id": "l1", "player": "p1", "name": "Window", "target": "Mid",
-                "side": "T", "resolution": "1920x1080",
-                "image": "assets/lineups/mirage/p1/window-1920x1080.png",
+                "side": "T", "type": "smoke", "aspect": "16:9",
+                "image": "assets/lineups/mirage/p1/window-16x9.png",
             }
         ],
     }
@@ -64,7 +64,7 @@ class ValidateTest(unittest.TestCase):
         self.write("data/team.json", TEAM)
         self.write("data/mirage.json", mirage())
         self.write("assets/tactics/mirage/pistol.png", "")
-        self.write("assets/lineups/mirage/p1/window-1920x1080.png", "")
+        self.write("assets/lineups/mirage/p1/window-16x9.png", "")
 
     def tearDown(self):
         self._tmp.cleanup()
@@ -131,13 +131,46 @@ class ValidateTest(unittest.TestCase):
         self.write("data/mirage.json", m)
         self.assertProblem('zduplikowane id lineupu "l1"')
 
-    def test_invalid_side_and_resolution(self):
+    def test_invalid_side_type_and_aspect(self):
         m = mirage()
         m["lineups"][0]["side"] = "t"
-        m["lineups"][0]["resolution"] = "1920×1080"
+        m["lineups"][0]["type"] = "he"
+        m["lineups"][0]["aspect"] = "1920x1080"
         self.write("data/mirage.json", m)
         self.assertProblem('lineup "l1": "side" musi być "T" albo "CT"')
-        self.assertProblem('lineup "l1": "resolution" w formacie SZEROKOŚĆxWYSOKOŚĆ')
+        self.assertProblem('lineup "l1": "type" musi być jednym z: smoke, flash, molotov')
+        self.assertProblem('lineup "l1": "aspect" musi być jednym z: 4:3, 4:3 stretched, 16:9, 21:9')
+
+    def test_all_aspects_and_types_accepted(self):
+        m = mirage()
+        base = m["lineups"][0]
+        m["lineups"] = []
+        for i, (t, a) in enumerate([("smoke", "4:3"), ("flash", "4:3 stretched"), ("molotov", "16:9"), ("smoke", "21:9")]):
+            m["lineups"].append(dict(base, id=f"l{i}", type=t, aspect=a))
+        self.write("data/mirage.json", m)
+        self.assertEqual(self.problems(), [])
+
+    def test_legacy_resolution_field_is_reported(self):
+        m = mirage()
+        m["lineups"][0]["resolution"] = "1920x1080"
+        self.write("data/mirage.json", m)
+        self.assertProblem('lineup "l1": pole "resolution" nie jest już używane — użyj "aspect"')
+
+    def test_player_aspect(self):
+        team = json.loads(json.dumps(TEAM))
+        team["players"][0]["aspect"] = "4:3 stretched"
+        team["players"][1]["aspect"] = None
+        self.write("data/team.json", team)
+        self.assertEqual(self.problems(), [])
+        team["players"][2]["aspect"] = "16x9"
+        self.write("data/team.json", team)
+        self.assertProblem('gracz "s1": "aspect" musi być jednym z: 4:3, 4:3 stretched, 16:9, 21:9 albo null')
+
+    def test_map_accent_colour(self):
+        self.write("data/maps.json", {"maps": [{"id": "mirage", "name": "Mirage", "accent": "#d0904a"}]})
+        self.assertEqual(self.problems(), [])
+        self.write("data/maps.json", {"maps": [{"id": "mirage", "name": "Mirage", "accent": "orange"}]})
+        self.assertProblem('mapa "mirage": "accent" musi być kolorem w formacie #RRGGBB')
 
     def test_missing_required_lineup_field(self):
         m = mirage()
@@ -217,7 +250,7 @@ class GitTrackingTest(unittest.TestCase):
             ("data/team.json", TEAM),
             ("data/mirage.json", mirage()),
             ("assets/tactics/mirage/pistol.png", ""),
-            ("assets/lineups/mirage/p1/window-1920x1080.png", ""),
+            ("assets/lineups/mirage/p1/window-16x9.png", ""),
         ):
             write_file(self.root, rel, content)
         git(self.root, "init", "-q")

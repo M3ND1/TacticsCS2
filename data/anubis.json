@@ -1,0 +1,13 @@
+{
+  "id": "anubis",
+  "name": "Anubis",
+  "strategies": {
+    "pistol": null,
+    "execute": {
+      "A": null,
+      "B": null
+    },
+    "backup": null
+  },
+  "lineups": []
+}

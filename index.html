@@ -9,7 +9,8 @@
 <style>
 :root {
   --bg: #16181b; --panel: #1c1f23; --border: #2a2d31; --text: #d7dadf; --muted: #8a9099;
-  --accent: #6a9f5b; --accent-bg: #22301f; --warn: #d29a3a; --err: #d0544f;
+  --accent: #6a9f5b; --accent-bg: color-mix(in srgb, var(--accent) 16%, var(--bg)); --warn: #d29a3a; --err: #d0544f;
+  --smoke: #a7adb5; --flash: #e3c34a; --molotov: #e0604e;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -62,7 +63,16 @@ th { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: upp
 .plist button[aria-pressed="true"] { color: var(--text); border-left-color: var(--accent); background: var(--accent-bg); }
 .filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 4px; }
 .filters > span { display: flex; align-items: center; gap: 6px; }
-.lineup { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.lineup { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 16px; padding: 12px 0 12px 12px; border-bottom: 1px solid var(--border); border-left: 3px solid var(--border); }
+.lineup.type-smoke { border-left-color: var(--smoke); }
+.lineup.type-flash { border-left-color: var(--flash); }
+.lineup.type-molotov { border-left-color: var(--molotov); }
+.ut-smoke { color: var(--smoke); }
+.ut-flash { color: var(--flash); }
+.ut-molotov { color: var(--molotov); }
+.ut { font-weight: 600; padding: 0 3px; border-radius: 2px; background: color-mix(in srgb, currentColor 16%, transparent); }
+.type { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: 1px solid currentColor; padding: 1px 6px; border-radius: 2px; }
+.asp { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 0 4px; border-radius: 2px; margin-left: 6px; white-space: nowrap; }
 .lineup .shot { max-height: 220px; }
 .res { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--accent); border: 1px solid var(--accent); padding: 0 5px; border-radius: 2px; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0; }
@@ -108,8 +118,11 @@ const Core = (() => {
   const VARIANTS = ["A", "B"];
   const STRATEGY_SLOTS = ["pistol", "execute", "backup"];
   const MAP_ID_RE = /^[a-z0-9-]+$/;
-  const RES_RE = /^\d+x\d+$/;
-  const LINEUP_REQUIRED = ["id", "player", "name", "target", "side", "resolution", "image"];
+  const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+  const LINEUP_REQUIRED = ["id", "player", "name", "target", "side", "type", "aspect", "image"];
+  const ASPECTS = ["4:3", "4:3 stretched", "16:9", "21:9"];
+  const TYPES = ["smoke", "flash", "molotov"];
+  const SIDES = ["T", "CT"];
   const RELATIVE_HINT = "musi być względna (bez / na początku, bez .., bez http)";
 
   const isObj = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
@@ -263,6 +276,7 @@ const Core = (() => {
       if (seen.has(m.id)) p(`zduplikowane id mapy "${m.id}"`);
       seen.add(m.id);
       if (!isText(m.name)) p(`mapa "${m.id}" nie ma "name"`);
+      if (m.accent != null && !mapAccent(m)) p(`mapa "${m.id}": "accent" musi być kolorem w formacie #RRGGBB`);
     });
     return out;
   }
@@ -290,6 +304,9 @@ const Core = (() => {
       if (!isText(pl.name)) p(`gracz "${pl.id}" nie ma "name"`);
       const statusOk = pl.status === "active" || pl.status === "sub";
       if (!statusOk) p(`gracz "${pl.id}": "status" musi być "active" albo "sub"`);
+      if (pl.aspect != null && !ASPECTS.includes(pl.aspect)) {
+        p(`gracz "${pl.id}": "aspect" musi być jednym z: ${ASPECTS.join(", ")} albo null`);
+      }
       if (pl.role == null) return;
       if (typeof pl.role !== "string" || !roleIds.has(pl.role)) return p(`gracz "${pl.id}": nieznana rola "${pl.role}"`);
       if (!statusOk) return;
@@ -361,9 +378,9 @@ const Core = (() => {
       if (isText(l.side) && l.side !== "T" && l.side !== "CT") p(`lineup "${name}": "side" musi być "T" albo "CT"`);
       if (isText(l.player) && playerIds && !playerIds.has(l.player)) p(`lineup "${name}": nieznany gracz "${l.player}"`);
       if (isText(l.image) && !isRelativePath(l.image)) p(`lineup "${name}": ścieżka "image" ${RELATIVE_HINT}`);
-      if (isText(l.resolution) && !RES_RE.test(l.resolution)) {
-        p(`lineup "${name}": "resolution" w formacie SZEROKOŚĆxWYSOKOŚĆ, np. 1920x1080`);
-      }
+      if (isText(l.type) && !TYPES.includes(l.type)) p(`lineup "${name}": "type" musi być jednym z: ${TYPES.join(", ")}`);
+      if (isText(l.aspect) && !ASPECTS.includes(l.aspect)) p(`lineup "${name}": "aspect" musi być jednym z: ${ASPECTS.join(", ")}`);
+      if ("resolution" in l) p(`lineup "${name}": pole "resolution" nie jest już używane — użyj "aspect"`);
     });
     return out;
   }
@@ -454,26 +471,44 @@ const Core = (() => {
   }
 
   // ── lineups ──
-  function formatResolution(res) {
-    if (!isText(res)) return "?";
-    return res.replace(/^(\d+)\s*[xX×]\s*(\d+)$/, "$1×$2");
+  function formatAspect(aspect) {
+    if (!isText(aspect)) return "?";
+    return aspect === "4:3 stretched" ? "4:3 rozciągnięte" : aspect;
   }
 
+  // true only when both are known and differ — an unknown aspect never warns
+  const aspectMismatch = (lineupAspect, myAspect) => isText(lineupAspect) && isText(myAspect) && lineupAspect !== myAspect;
+
+  // facet values in a fixed, meaningful order (not alphabetical)
   function lineupFacets(lineups) {
-    const uniq = (xs) => [...new Set(xs.filter(isText))];
-    const area = (r) => r.split("x").map(Number);
-    return {
-      sides: uniq(lineups.map((l) => l.side)).sort(),
-      resolutions: uniq(lineups.map((l) => l.resolution)).sort((a, b) => {
-        const [aw, ah] = area(a), [bw, bh] = area(b);
-        return aw - bw || ah - bh || a.localeCompare(b);
-      }),
-    };
+    const present = (order, key) => order.filter((v) => lineups.some((l) => l[key] === v));
+    return { types: present(TYPES, "type"), sides: present(SIDES, "side"), aspects: present(ASPECTS, "aspect") };
   }
 
-  function filterLineups(lineups, { side, resolution }) {
-    return lineups.filter((l) => (side == null || l.side === side) && (resolution == null || l.resolution === resolution));
+  function filterLineups(lineups, { type, side, aspect } = {}) {
+    return lineups.filter((l) => (type == null || l.type === type) && (side == null || l.side === side) && (aspect == null || l.aspect === aspect));
   }
+
+  // Split free text into plain parts and grenade words (smoke…, flash…, molo…/molotov, incendiary).
+  function utilityTokens(text) {
+    const re = /\b(smoke|flash|molo|incendiary)[\p{L}'’]*/giu;
+    const typeOf = (word) => {
+      const w = word.toLowerCase();
+      return w.startsWith("smoke") ? "smoke" : w.startsWith("flash") ? "flash" : "molotov";
+    };
+    const out = [];
+    const str = String(text ?? "");
+    let last = 0;
+    for (const m of str.matchAll(re)) {
+      if (m.index > last) out.push({ text: str.slice(last, m.index), type: null });
+      out.push({ text: m[0], type: typeOf(m[0]) });
+      last = m.index + m[0].length;
+    }
+    if (last < str.length) out.push({ text: str.slice(last), type: null });
+    return out;
+  }
+
+  const mapAccent = (map) => (isObj(map) && typeof map.accent === "string" && HEX_RE.test(map.accent) ? map.accent : null);
 
   return {
     NOTE_PREFIX, ME_KEY, TABS,
@@ -482,7 +517,7 @@ const Core = (() => {
     resolveRole, groupPlayers, validMe, defaultLineupPlayer,
     parseHash, buildHash,
     noteKey, noteContext, buildNotesExport, parseNotesImport, exportFilename,
-    formatResolution, lineupFacets, filterLineups,
+    formatAspect, aspectMismatch, lineupFacets, filterLineups, utilityTokens, mapAccent,
   };
 })();
 </script>
@@ -567,7 +602,7 @@ function currentMe() {
 function renderMePicker() {
   const sel = $("#me");
   const { active, subs } = Core.groupPlayers(app.team);
-  const opt = (p) => h("option", { value: p.id }, p.name || p.id);
+  const opt = (p) => h("option", { value: p.id }, `${p.name || p.id}${p.aspect ? ` (${Core.formatAspect(p.aspect)})` : ""}`);
   sel.replaceChildren(
     h("option", { value: "" }, "— wybierz —"),
     ...active.map(opt),
@@ -625,8 +660,12 @@ async function route() {
   app.state = s;
   renderMapButtons();
   renderTabs();
-  const mapName = (app.maps.find((m) => m.id === s.map) || {}).name || s.map;
+  const mapEntry = app.maps.find((m) => m.id === s.map) || {};
+  const mapName = mapEntry.name || s.map;
   document.title = `${mapName} · ${TAB_LABELS[s.tab]} — CS2 Playbook`;
+  const accent = Core.mapAccent(mapEntry);
+  if (accent) document.documentElement.style.setProperty("--accent", accent);
+  else document.documentElement.style.removeProperty("--accent");
   const main = $("#main");
   let map;
   try {
@@ -809,10 +848,23 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ── strategy tabs ──
+const TYPE_LABELS = { smoke: "Smoke", flash: "Flash", molotov: "Molotov" };
+
+function aspectTag(player) {
+  return h("span", {
+    class: "asp",
+    title: player.aspect ? "Proporcje ekranu gracza" : "Proporcje nieustawione — uzupełnij \"aspect\" w data/team.json",
+  }, Core.formatAspect(player.aspect));
+}
+
+function utilityCell(text) {
+  return Core.utilityTokens(text).map((t) => (t.type ? h("span", { class: `ut ut-${t.type}` }, t.text) : t.text));
+}
+
 function playerCell(roleId) {
   const res = Core.resolveRole(app.team, roleId);
   if (res.kind === "none") return h("span", { class: "warn" }, "— brak gracza");
-  const names = res.players.map((p) => p.name || p.id).join(", ");
+  const names = res.players.map((p, i) => [i ? ", " : "", p.name || p.id, aspectTag(p)]);
   return res.kind === "sub" ? [names, " ", h("span", { class: "muted" }, "(rezerwa)")] : names;
 }
 
@@ -823,7 +875,7 @@ function assignmentsTable(rows) {
     h("tbody", null, rows.map((r) => h("tr", null,
       h("td", null, roleName(r.role) || h("span", { class: "warn" }, `⚠ nieznana rola: ${r.role ?? "(brak)"}`)),
       h("td", null, playerCell(r.role)),
-      ["position", "utility", "action", "timing", "notes"].map((k) => h("td", { class: "pre" }, r[k] ?? "")),
+      ["position", "utility", "action", "timing", "notes"].map((k) => h("td", { class: "pre" }, k === "utility" ? utilityCell(r[k]) : r[k] ?? "")),
     ))));
 }
 
@@ -870,16 +922,21 @@ VIEWS.execute = renderStrategyTab;
 VIEWS.backup = renderStrategyTab;
 
 // ── lineups tab ──
-function lineupRow(l, mapId, file) {
-  const res = `${Core.formatResolution(l.resolution)}${l.aspect ? ` · ${l.aspect}` : ""}`;
+function lineupRow(l, mapId, file, myAspect) {
+  const aspect = Core.formatAspect(l.aspect);
+  const known = Object.hasOwn(TYPE_LABELS, l.type);
   const kv = (k, v) => (v ? [h("dt", null, k), h("dd", null, v)] : null);
-  return h("div", { class: "lineup" },
-    h("div", null, shot(l.image, `${l.name} · ${res}`, file)),
+  return h("div", { class: known ? `lineup type-${l.type}` : "lineup" },
+    h("div", null, shot(l.image, `${l.name || l.id} · ${aspect}`, file)),
     h("div", null,
       h("div", { class: "titlebar" },
+        known ? h("span", { class: `type ut-${l.type}` }, TYPE_LABELS[l.type]) : null,
         h("h1", null, l.name || l.id),
-        h("span", { class: "res", title: "Rozdzielczość / proporcje, dla których działa ten lineup" }, res),
+        h("span", { class: "res", title: "Proporcje ekranu, dla których działa ten lineup" }, aspect),
         l.example ? h("span", { class: "badge" }, "PRZYKŁAD") : null),
+      Core.aspectMismatch(l.aspect, myAspect)
+        ? h("p", { class: "warn" }, `⚠ Lineup pod ${aspect} — Ty grasz na ${Core.formatAspect(myAspect)}, może nie wejść.`)
+        : null,
       h("dl", { class: "kv" }, kv("Cel", l.target), kv("Strona", l.side), kv("Skąd", l.from), kv("Rzut", l.throw)),
       l.instructions ? [h("h2", null, "Instrukcja"), h("p", { class: "pre" }, l.instructions)] : null,
       l.notes ? [h("h2", null, "Notatki zespołu"), h("p", { class: "pre" }, l.notes)] : null,
@@ -896,7 +953,7 @@ VIEWS.lineupy = (main, { map, state }) => {
     type: "button",
     "aria-pressed": String(p.id === playerId),
     onclick: () => navigate({ player: p.id }),
-  }, h("span", null, p.name || p.id), h("span", { class: "muted" }, String(count(p.id))));
+  }, h("span", null, p.name || p.id, aspectTag(p)), h("span", { class: "muted" }, String(count(p.id))));
 
   const content = h("div");
   main.append(h("div", { class: "layout-lineups" },
@@ -917,9 +974,16 @@ VIEWS.lineupy = (main, { map, state }) => {
     return;
   }
 
-  const filter = { side: null, resolution: null };
+  const me = app.team.players.find((p) => p.id === currentMe());
+  const myAspect = me ? me.aspect : null;
+  const filter = { type: null, side: null, aspect: null };
   const list = h("div");
-  const draw = () => list.replaceChildren(...Core.filterLineups(mine, filter).map((l) => lineupRow(l, state.map, file)));
+  const draw = () => {
+    const shown = Core.filterLineups(mine, filter);
+    list.replaceChildren(...(shown.length
+      ? shown.map((l) => lineupRow(l, state.map, file, myAspect))
+      : [h("div", { class: "empty" }, "Brak lineupów dla wybranych filtrów.")]));
+  };
   const chips = (label, key, values, fmt) => {
     if (values.length < 2) return null;
     const seg = h("div", { class: "seg", role: "group", "aria-label": label });
@@ -939,12 +1003,12 @@ VIEWS.lineupy = (main, { map, state }) => {
   const facets = Core.lineupFacets(mine);
   content.append(
     h("div", { class: "filters" },
+      chips("Typ:", "type", facets.types, (v) => h("span", { class: `ut-${v}` }, TYPE_LABELS[v])),
       chips("Strona:", "side", facets.sides, (v) => v),
-      chips("Rozdzielczość:", "resolution", facets.resolutions, Core.formatResolution)),
+      chips("Proporcje:", "aspect", facets.aspects, Core.formatAspect)),
     list);
   draw();
 };
-
 
 boot();
 </script>

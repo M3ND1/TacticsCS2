@@ -53,37 +53,43 @@ Walidator sprawdza też (gdy folder jest repozytorium git), czy każdy plik dany
 
 Problemy w danych widać też na stronie — pasek „⚠ N problemów w danych” na dole ekranu.
 
-## Dodanie lineupu (najczęstsza czynność)
+## Dodanie lineupu — smoke, flash, molotov (najczęstsza czynność)
+
+Wszystkie mapy i foldery graczy już istnieją (`assets/lineups/<mapa>/<gracz>/`). Dodajesz tylko zdjęcie i jeden wpis:
 
 1. Zrób screenshot w grze. Zapisz go jako np.
-   `assets/lineups/mirage/p1/window-t-spawn-1920x1080.png`
-   (folder = id mapy / id gracza; w nazwie pliku rozdzielczość).
+   `assets/lineups/mirage/mendi/window-t-spawn-16x9.png`
+   (folder = id mapy / id gracza; w nazwie pliku proporcje).
 2. Dopisz wpis do `"lineups"` w `data/mirage.json`:
 
    ```json
    {
      "id": "window-t-spawn",
-     "player": "p1",
+     "player": "mendi",
+     "type": "smoke",
      "name": "Window",
      "target": "Mid window",
      "side": "T",
      "from": "T spawn",
      "throw": "jumpthrow",
-     "resolution": "1920x1080",
      "aspect": "16:9",
-     "image": "assets/lineups/mirage/p1/window-t-spawn-1920x1080.png",
+     "image": "assets/lineups/mirage/mendi/window-t-spawn-16x9.png",
      "instructions": "Stań w rogu przy ...",
      "notes": ""
    }
    ```
 
-   Wymagane: `id`, `player`, `name`, `target`, `side` (`T` albo `CT`), `resolution` (np. `1920x1080`), `image`. Reszta jest opcjonalna.
-   `id` musi być unikalne w obrębie mapy — przypisane są do niego prywatne notatki, więc lepiej go potem nie zmieniać.
+   Wymagane: `id`, `player`, `type`, `name`, `target`, `side` (`T` albo `CT`), `aspect`, `image`. Reszta jest opcjonalna.
+   - `type`: `"smoke"` (szary), `"flash"` (żółty) albo `"molotov"` (czerwony).
+   - `aspect`: proporcje ekranu, pod które działa lineup: `"4:3"`, `"4:3 stretched"` (rozciągnięte), `"16:9"` albo `"21:9"`. Rozdzielczość w pikselach (1080p, 1440p, 4K) nie ma znaczenia — liczą się proporcje.
+   - `id` musi być unikalne w obrębie mapy — przypisane są do niego prywatne notatki, więc lepiej go potem nie zmieniać.
 3. `python3 tools/validate.py`, potem `git add`, `git commit`, `git push`.
 
-Samo skopiowanie obrazka do folderu **nie** wystarczy — strona statyczna nie widzi zawartości folderów, dlatego każdy obrazek musi mieć wpis w JSON.
+Samo skopiowanie obrazka do folderu **nie** wystarczy — strona statyczna nie widzi zawartości folderów, dlatego każdy obrazek musi mieć wpis w JSON. Przykładowe lineupy (`"example": true`) możesz usunąć z JSON-a razem z ich plikami `.svg`.
 
-Ten sam smoke na inną rozdzielczość = osobny wpis z innym `id`, `resolution` i plikiem.
+Ten sam lineup pod inne proporcje = osobny wpis z innym `id`, `aspect` i plikiem.
+
+Gdy wybierzesz siebie w „Kim jestem”, przy lineupach pod inne proporcje niż Twoje zobaczysz ostrzeżenie „może nie wejść”.
 
 ## Strategie (pistolówka, execute A/B, backup)
 
@@ -117,31 +123,37 @@ Każda mapa ma dokładnie trzy sloty w `"strategies"`: `pistol`, `execute` (z wa
 
 Podmiana istniejącego screenshotu: nadpisz plik pod tą samą nazwą albo zmień ścieżkę `"image"`.
 
-Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola rozdzielczości** (tylko lineupy je mają). Jeśli rozdzielczość ma znaczenie, możesz ją dopisać do nazwy pliku, np. `execute-a-1920x1080.png`.
+Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola proporcji** (tylko lineupy je mają). Jeśli ma to znaczenie, dopisz proporcje do nazwy pliku, np. `execute-a-16x9.png`.
+
+W kolumnie **Utility** tabel słowa smoke…, flash…, molo… / molotov i incendiary same dostają kolor (smoke szary, flash żółty, molotov czerwony).
 
 ## Gracze, role i rezerwowi (`data/team.json`)
 
 ```json
 {
   "roles":   [{ "id": "entry", "name": "Entry" }],
-  "players": [{ "id": "p1", "name": "Kuba", "role": "entry", "status": "active" }]
+  "players": [{ "id": "mendi", "name": "Mendi", "role": "entry", "status": "active", "aspect": "16:9" }]
 }
 ```
 
 - `status`: `"active"` (skład) albo `"sub"` (rezerwowy). Liczba graczy jest dowolna.
+- `aspect`: proporcje ekranu gracza — `"4:3"`, `"4:3 stretched"`, `"16:9"`, `"21:9"` albo `null` (nieustawione, na stronie widać „?”). Widać je przy nicku w tabelach, na liście lineupów i w „Kim jestem” — reszta drużyny od razu wie, że ktoś gra na innych proporcjach i jego instant smoke może u nich nie wejść.
+- Role w `data/team.json` są na razie przykładowe — ustaw własne.
 - `id` gracza się nie zmienia (od niego zależą foldery lineupów i notatki). Zmiana nicku = zmiana `name`.
 - **Rezerwowy wchodzi za gracza:** ustaw rezerwowemu `"role": "entry"`, a zastępowanemu `"role": null`. Tabele na wszystkich mapach zaktualizują się same.
 - Rezerwowi mają własne lineupy (folder `assets/lineups/<mapa>/<id>/`) i mogą wybrać siebie w „Kim jestem”.
 
 ## Nowa mapa
 
-1. Dopisz do tablicy `"maps"` w `data/maps.json` nowy wpis `{ "id": "dust2", "name": "Dust II" }` (po przecinku po poprzednim wpisie; id: małe litery, cyfry, `-`).
-2. Utwórz `data/dust2.json` — skopiuj `data/mirage.json` i zmień `"id"` na `"dust2"`. Potem zastąp zawartość `"strategies"` i `"lineups"` pustym szkieletem:
+Gotowe są: Mirage, Dust II, Inferno, Ancient, Nuke i Anubis (każda ma własny kolor `"accent"` w `data/maps.json`). Kolejną, np. Train, dodajesz tak:
+
+1. Dopisz do tablicy `"maps"` w `data/maps.json` nowy wpis `{ "id": "train", "name": "Train", "accent": "#8a8fc9" }` (po przecinku po poprzednim wpisie; id: małe litery, cyfry, `-`; `accent` — kolor motywu mapy w formacie `#RRGGBB`, opcjonalny).
+2. Utwórz `data/train.json` — skopiuj `data/nuke.json` i zmień `"id"` i `"name"`. Pusty szkielet wygląda tak:
 
    ```json
    "strategies": { "pistol": null, "execute": { "A": null, "B": null }, "backup": null }, "lineups": []
    ```
-3. Obrazki w `assets/tactics/dust2/` i `assets/lineups/dust2/<id-gracza>/`.
+3. Obrazki w `assets/tactics/train/` i `assets/lineups/train/<id-gracza>/`.
 4. `python3 tools/validate.py`, commit, push.
 
 ## Prywatne notatki
@@ -154,7 +166,7 @@ Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola rozdzie
 
 ## Linki do konkretnych widoków
 
-Adres strony zapamiętuje widok, np. `…/#mirage/execute/B` albo `…/#mirage/lineupy/p1` — można je wklejać na Discordzie.
+Adres strony zapamiętuje widok, np. `…/#mirage/execute/B` albo `…/#mirage/lineupy/mendi` — można je wklejać na Discordzie.
 
 ## Testy (dla osoby rozwijającej aplikację)
 
