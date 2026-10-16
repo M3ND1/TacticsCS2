@@ -24,9 +24,12 @@ i otwórz <http://localhost:8000>.
 
 Każdy kolejny `git push` aktualizuje stronę (zwykle w ciągu 1–2 minut). Wszystkie ścieżki są względne, więc działa to też z podkatalogu repozytorium.
 
+Plik `.nojekyll` w katalogu głównym wyłącza przetwarzanie Jekyllem na GitHub Pages — nie usuwaj go.
+
 ## Struktura
 
 ```
+.nojekyll                   wyłącza Jekyll na GitHub Pages (nie usuwaj)
 index.html                  aplikacja (nie trzeba jej edytować przy dodawaniu treści)
 data/maps.json              lista map i ich kolejność
 data/team.json              role i gracze (skład + rezerwowi)
@@ -100,8 +103,17 @@ Każda mapa ma dokładnie trzy sloty w `"strategies"`: `pistol`, `execute` (z wa
 - `"example": true` dodaje plakietkę PRZYKŁAD. Usuń to pole, gdy wpiszesz własną strategię.
 - Kolejność wierszy w `assignments` = kolejność w tabeli (np. kolejność wejścia).
 - `role` to id roli z `data/team.json` — nazwisko gracza strona dobiera sama.
-- **Backup:** narysuj plan w dowolnym programie (Excalidraw, Paint, edytor taktyk), zapisz jako PNG w `assets/tactics/<mapa>/backup.png` i wpisz ścieżkę w `"image"`.
-- **Podmiana screenshotu:** nadpisz plik pod tą samą nazwą albo zmień ścieżkę `"image"`.
+
+### Dodanie lub podmiana screenshotu strategii
+
+1. Zapisz obrazek (PNG/JPG) w `assets/tactics/<mapa>/`, nazwą małymi literami, np. `execute-b.png`.
+   Dla **backupu** możesz narysować plan w dowolnym programie (Excalidraw, Paint, edytor taktyk) i zapisać go jako PNG, np. `backup.png`.
+2. W `data/<mapa>.json` wpisz ścieżkę w polu `"image"` właściwego slotu (`pistol`, `execute.A`, `execute.B` albo `backup`), np. `"image": "assets/tactics/mirage/execute-b.png"`.
+3. `python3 tools/validate.py`, potem `git add`, `git commit`, `git push`.
+
+Podmiana istniejącego screenshotu: nadpisz plik pod tą samą nazwą albo zmień ścieżkę `"image"`.
+
+Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola rozdzielczości** (tylko lineupy je mają). Jeśli rozdzielczość ma znaczenie, możesz ją dopisać do nazwy pliku, np. `execute-a-1920x1080.png`.
 
 ## Gracze, role i rezerwowi (`data/team.json`)
 
