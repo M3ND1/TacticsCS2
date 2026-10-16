@@ -766,6 +766,98 @@ $("#import-file").addEventListener("change", (e) => {
   if (file) importNotes(file);
 });
 
+// ── images + lightbox ──
+function shot(path, caption, sourceFile) {
+  if (!path) return null;
+  const img = h("img", { class: "shot", src: path, alt: caption || path, loading: "lazy" });
+  img.addEventListener("error", () => {
+    addProblems([{ file: sourceFile, message: `brak pliku obrazka "${path}"` }]);
+    img.replaceWith(h("div", { class: "missing" }, `Brak pliku: ${path}`));
+  }, { once: true });
+  img.addEventListener("click", () => openLightbox(path, caption));
+  return img;
+}
+
+function openLightbox(path, caption) {
+  const lb = $("#lightbox");
+  lb.querySelector("img").src = path;
+  lb.querySelector(".cap").textContent = caption ? `${caption} · ${path}` : path;
+  lb.hidden = false;
+  lb.querySelector("button").focus();
+}
+
+function closeLightbox() {
+  const lb = $("#lightbox");
+  lb.hidden = true;
+  lb.querySelector("img").removeAttribute("src");
+}
+
+$("#lightbox").addEventListener("click", closeLightbox);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !$("#lightbox").hidden) closeLightbox();
+});
+
+// ── strategy tabs ──
+function playerCell(roleId) {
+  const res = Core.resolveRole(app.team, roleId);
+  if (res.kind === "none") return h("span", { class: "warn" }, "— brak gracza");
+  const names = res.players.map((p) => p.name || p.id).join(", ");
+  return res.kind === "sub" ? [names, " ", h("span", { class: "muted" }, "(rezerwa)")] : names;
+}
+
+function assignmentsTable(rows) {
+  const roleName = (id) => (app.team.roles.find((r) => r.id === id) || {}).name;
+  return h("table", null,
+    h("thead", null, h("tr", null, ["Rola", "Gracz", "Pozycja", "Utility", "Zadanie", "Timing", "Uwagi"].map((t) => h("th", null, t)))),
+    h("tbody", null, rows.map((r) => h("tr", null,
+      h("td", null, roleName(r.role) || h("span", { class: "warn" }, `⚠ nieznana rola: ${r.role ?? "(brak)"}`)),
+      h("td", null, playerCell(r.role)),
+      ["position", "utility", "action", "timing", "notes"].map((k) => h("td", { class: "pre" }, r[k] ?? "")),
+    ))));
+}
+
+function renderStrategyTab(main, { map, state }) {
+  const file = `data/${state.map}.json`;
+  const slot = { pistolowka: "pistol", execute: "execute", backup: "backup" }[state.tab];
+  if (slot === "execute") {
+    main.append(h("div", { class: "titlebar" },
+      h("span", { class: "muted" }, "Bombsite:"),
+      h("div", { class: "seg", role: "group", "aria-label": "Bombsite" }, ["A", "B"].map((v) => h("button", {
+        type: "button",
+        "aria-pressed": String(state.variant === v),
+        onclick: () => navigate({ variant: v }),
+      }, v)))));
+  }
+  const strat = slot === "execute" ? map.strategies.execute[state.variant] : map.strategies[slot];
+  const context = Core.noteContext(state.tab, state.variant);
+
+  if (!strat) {
+    main.append(h("div", { class: "empty" },
+      slot === "execute" ? `Brak strategii dla bombsite ${state.variant}.` : "Brak strategii.",
+      h("br"),
+      h("span", { class: "muted" }, `Dodaj ją w ${file}.`)));
+    main.append(notesWidget(state.map, context));
+    return;
+  }
+
+  main.append(h("div", { class: "titlebar" },
+    h("h1", null, strat.title || "(bez tytułu)"),
+    strat.example ? h("span", { class: "badge", title: "Przykładowe dane — podmień na własną strategię" }, "PRZYKŁAD") : null));
+
+  const text = h("div", null,
+    strat.summary ? [h("h2", null, "Opis"), h("p", { class: "pre" }, strat.summary)] : null,
+    strat.steps.length ? [h("h2", null, "Kroki"), h("ol", { class: "steps" }, strat.steps.map((s) => h("li", null, s)))] : null);
+  main.append(strat.image ? h("div", { class: "split" }, h("div", null, shot(strat.image, strat.title, file)), text) : text);
+
+  if (strat.assignments.length) main.append(h("h2", null, "Zadania graczy"), assignmentsTable(strat.assignments));
+  if (strat.notes) main.append(h("h2", null, "Notatki zespołu"), h("p", { class: "pre" }, strat.notes));
+  main.append(notesWidget(state.map, context));
+}
+
+VIEWS.pistolowka = renderStrategyTab;
+VIEWS.execute = renderStrategyTab;
+VIEWS.backup = renderStrategyTab;
+
 boot();
 </script>
 </body>
