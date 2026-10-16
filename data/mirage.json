@@ -1,0 +1,106 @@
+{
+  "id": "mirage",
+  "name": "Mirage",
+  "strategies": {
+    "pistol": {
+      "example": true,
+      "title": "PRZYKŁAD — pistolówka (podmień na własną)",
+      "summary": "To jest przykładowy wpis, który pokazuje format danych. To NIE jest taktyka zespołu.\nZastąp tytuł, opis, obrazek, kroki i tabelę własną strategią w data/mirage.json.",
+      "image": "assets/tactics/mirage/pistol.svg",
+      "steps": [
+        "Krok 1 — opisz, co robicie na starcie rundy.",
+        "Krok 2 — opisz moment wejścia lub zmiany.",
+        "Krok 3 — opisz plan po zdobyciu lub utracie przewagi."
+      ],
+      "assignments": [
+        { "role": "entry",   "position": "np. pozycja startowa", "utility": "np. flash", "action": "opis zadania", "timing": "np. 0:10", "notes": "" },
+        { "role": "second",  "position": "np. pozycja startowa", "utility": "np. smoke", "action": "opis zadania", "timing": "po wejściu entry", "notes": "" },
+        { "role": "support", "position": "np. pozycja startowa", "utility": "np. smoke", "action": "opis zadania", "timing": "", "notes": "" },
+        { "role": "lurk",    "position": "np. pozycja startowa", "utility": "", "action": "opis zadania", "timing": "", "notes": "" },
+        { "role": "awp",     "position": "np. pozycja startowa", "utility": "", "action": "opis zadania", "timing": "", "notes": "" }
+      ],
+      "notes": "Miejsce na wspólne notatki zespołu do tej strategii."
+    },
+    "execute": {
+      "A": {
+        "example": true,
+        "title": "PRZYKŁAD — execute A (podmień na własny)",
+        "summary": "Przykładowy wpis execute na bombsite A. To NIE jest taktyka zespołu.",
+        "image": "assets/tactics/mirage/execute-a.svg",
+        "steps": [
+          "Krok 1 — ustawienie przed executem.",
+          "Krok 2 — utility (kolejność smoke'ów i flashy).",
+          "Krok 3 — kolejność wejścia i trade'y.",
+          "Krok 4 — plant i ustawienie po plancie."
+        ],
+        "assignments": [
+          { "role": "entry",   "position": "np. pozycja", "utility": "np. 2× flash", "action": "pierwszy na site", "timing": "1.", "notes": "trade: second" },
+          { "role": "second",  "position": "np. pozycja", "utility": "np. smoke", "action": "drugi na site", "timing": "2.", "notes": "" },
+          { "role": "support", "position": "np. pozycja", "utility": "np. smoke + molotov", "action": "utility z daleka", "timing": "przed wejściem", "notes": "" },
+          { "role": "lurk",    "position": "np. pozycja", "utility": "", "action": "kontrola rotacji", "timing": "", "notes": "" },
+          { "role": "awp",     "position": "np. pozycja", "utility": "np. flash", "action": "pick przed executem", "timing": "", "notes": "" }
+        ],
+        "notes": ""
+      },
+      "B": null
+    },
+    "backup": {
+      "example": true,
+      "title": "PRZYKŁAD — backup (podmień na własny)",
+      "summary": "Przykładowa strategia awaryjna. Obrazek to wcześniej narysowany diagram (np. z Excalidraw lub Painta), zapisany jako PNG.",
+      "image": "assets/tactics/mirage/backup.svg",
+      "steps": [],
+      "assignments": [
+        { "role": "entry", "position": "np. pozycja", "utility": "", "action": "opis zadania", "timing": "", "notes": "" },
+        { "role": "awp",   "position": "np. pozycja", "utility": "", "action": "opis zadania", "timing": "", "notes": "" }
+      ],
+      "notes": ""
+    }
+  },
+  "lineups": [
+    {
+      "id": "example-smoke-1",
+      "example": true,
+      "player": "p1",
+      "name": "PRZYKŁAD smoke 1",
+      "target": "np. Window",
+      "side": "T",
+      "from": "np. T spawn",
+      "throw": "np. jumpthrow",
+      "resolution": "1920x1080",
+      "aspect": "16:9",
+      "image": "assets/lineups/mirage/p1/example-smoke-1-1920x1080.svg",
+      "instructions": "Opisz, gdzie stanąć i gdzie celować.",
+      "notes": ""
+    },
+    {
+      "id": "example-smoke-2",
+      "example": true,
+      "player": "p1",
+      "name": "PRZYKŁAD smoke 2",
+      "target": "np. CT",
+      "side": "T",
+      "from": "np. T ramp",
+      "throw": "np. lewy przycisk",
+      "resolution": "2560x1440",
+      "aspect": "16:9",
+      "image": "assets/lineups/mirage/p1/example-smoke-2-2560x1440.svg",
+      "instructions": "",
+      "notes": ""
+    },
+    {
+      "id": "example-smoke-3",
+      "example": true,
+      "player": "p2",
+      "name": "PRZYKŁAD smoke 3",
+      "target": "np. Top mid",
+      "side": "CT",
+      "from": "np. CT spawn",
+      "resolution": "1280x960",
+      "aspect": "4:3",
+      "image": "assets/lineups/mirage/p2/example-smoke-3-1280x960.svg",
+      "instructions": "Lineup dla 4:3 — na 16:9 nie zadziała tak samo.",
+      "notes": ""
+    }
+  ]
+}

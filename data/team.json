@@ -1,0 +1,17 @@
+{
+  "roles": [
+    { "id": "entry",   "name": "Entry" },
+    { "id": "second",  "name": "Second entry" },
+    { "id": "support", "name": "Support" },
+    { "id": "lurk",    "name": "Lurk" },
+    { "id": "awp",     "name": "AWP" }
+  ],
+  "players": [
+    { "id": "p1", "name": "PRZYKŁAD Gracz 1",   "role": "entry",   "status": "active" },
+    { "id": "p2", "name": "PRZYKŁAD Gracz 2",   "role": "second",  "status": "active" },
+    { "id": "p3", "name": "PRZYKŁAD Gracz 3",   "role": "support", "status": "active" },
+    { "id": "p4", "name": "PRZYKŁAD Gracz 4",   "role": "lurk",    "status": "active" },
+    { "id": "p5", "name": "PRZYKŁAD Gracz 5",   "role": "awp",     "status": "active" },
+    { "id": "s1", "name": "PRZYKŁAD Rezerwa 1", "role": null,      "status": "sub" }
+  ]
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="1440" viewBox="0 0 2560 1440">
+  <rect width="2560" height="1440" fill="#202327"/>
+  <rect x="6" y="6" width="2548" height="1428" fill="none" stroke="#d29a3a" stroke-width="6" stroke-dasharray="30 20"/>
+  <text x="1280" y="618" fill="#d29a3a" font-family="sans-serif" font-size="204" font-weight="700" text-anchor="middle">PRZYKŁAD</text>
+  <text x="1280" y="822" fill="#d7dadf" font-family="sans-serif" font-size="102" text-anchor="middle">Lineup · 2560×1440 · 16:9</text>
+  <text x="1280" y="964" fill="#8a9099" font-family="sans-serif" font-size="71" text-anchor="middle">podmień na screenshot z gry</text>
+</svg>
