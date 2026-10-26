@@ -344,19 +344,6 @@
       "notes": ""
     },
     {
-      "id": "b-kuchnia",
-      "player": "teey",
-      "type": "smoke",
-      "name": "B kuchnia",
-      "target": "Kuchnia",
-      "side": "T",
-      "from": "Góra środka",
-      "aspect": "16:9",
-      "image": "assets/lineups/mirage/teey/B-smoke-kuchnia.jpg",
-      "instructions": "",
-      "notes": "Do sprawdzenia: na screenie w ręce jest flash, a celownik jest prawie tam, gdzie w „Mid flash con”."
-    },
-    {
       "id": "b-flash-entry",
       "player": "teey",
       "type": "flash",
