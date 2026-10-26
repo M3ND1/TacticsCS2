@@ -104,7 +104,6 @@ Zakładka **Insta smoke** pokazuje screen ponumerowanych spawnów T i CT oraz li
 - Screen spawnów: zapisz jako `assets/spawns/<mapa>/T.jpg` / `CT.jpg` i wpisz w `data/<mapa>.json` (obok `"name"`):
   `"spawns": { "T": "assets/spawns/mirage/T.jpg", "CT": "assets/spawns/mirage/CT.jpg" }`.
 - Lineup jest insta smoke'iem, gdy ma pole `"spawn"` — numer pozycji na spawnie (1–10), np. `"spawn": 3`. Taki lineup widać też normalnie w zakładce Lineupy.
-- Brakuje screenów spawnów **Ancient**.
 
 ## Strategie (pistolówka, execute A, execute B, backup)
 

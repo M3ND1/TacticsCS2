@@ -1,6 +1,10 @@
 {
   "id": "ancient",
   "name": "Ancient",
+  "spawns": {
+    "T": "assets/spawns/ancient/T.jpg",
+    "CT": "assets/spawns/ancient/CT.jpg"
+  },
   "radar": {
     "image": "assets/maps/ancient.png",
     "labels": [
