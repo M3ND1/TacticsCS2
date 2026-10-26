@@ -5,6 +5,7 @@
     "pistol": {
       "title": "Szybkie B",
       "summary": "Pistolówka: szybkie B z dwoma smoke'ami (long i short) i flashami entry. Ciomka trzyma cave od strony mid, Mendi rzuca insta red na starcie.\nKupno: smoke + flash, entry 2× flash.",
+      "image": "assets/tactics/ancient/pistol.png",
       "steps": [
         "Start rundy: Mendi insta red z T spawnu (lineup 1, 4 albo 5 wg pozycji; z innej pozycji Mid red). Ciomka idzie mid w stronę cave.",
         "Rond smoke B long z Ruin, Teey smoke B short sprzed bramy — razem, na komendę.",
@@ -59,6 +60,7 @@
       "A": {
         "title": "Execute A przez A main",
         "summary": "Execute A: trzech przez A main, Ciomka na Dworze odcina donut, Mendi trzyma mid po insta red. Smoke'i CT, temple i donut lecą razem.",
+        "image": "assets/tactics/ancient/execute-a.png",
         "steps": [
           "Start rundy: Mendi insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red) i trzyma mid.",
           "Na komendę razem: Rond smoke A temple sprzed A, Teey smoke A na CT z Dworu, Ciomka smoke A donut z Dworu.",
@@ -113,6 +115,7 @@
       "B": {
         "title": "Execute B z molotovami",
         "summary": "Pełny execute B: smoke'i long i short, molotovy BS i ninja, flashe entry i oneway. Ciomka smoke'uje donut od strony mid, żeby spowolnić rotację z A.",
+        "image": "assets/tactics/ancient/execute-b.png",
         "steps": [
           "Start rundy: Mendi insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red). Ciomka idzie na Dwór.",
           "Na komendę razem: Rond smoke B long z Ruin, Teey smoke B short sprzed bramy, Ciomka smoke Mid donut z Dworu.",

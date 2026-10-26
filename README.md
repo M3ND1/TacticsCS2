@@ -127,6 +127,8 @@ Każda mapa ma dokładnie trzy sloty w `"strategies"`: `pistol`, `execute` (z wa
 
 Podmiana istniejącego screenshotu: nadpisz plik pod tą samą nazwą albo zmień ścieżkę `"image"`.
 
+Schematy pistolówki i execute A/B na Mirage i Ancient rysuje `tools/tactics_diagrams.py` (trasy graczy i rzuty są opisane w tym pliku). Nicki biorą się z ról w `data/team.json`, a legenda z tabeli strategii — po zmianie ról lub tabeli przerysuj je: `python3 tools/tactics_diagrams.py` (potrzebny Google Chrome).
+
 Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola proporcji** (tylko lineupy je mają). Jeśli ma to znaczenie, dopisz proporcje do nazwy pliku, np. `execute-a-16x9.png`.
 
 W kolumnie **Utility** tabel słowa smoke…, flash…, molo… / molotov i incendiary same dostają kolor (smoke szary, flash żółty, molotov czerwony).

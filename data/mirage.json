@@ -5,6 +5,7 @@
     "pistol": {
       "title": "Szybkie B przez Mieszkania",
       "summary": "Pistolówka: cała piątka na B przez Mieszkania. Trzy smoke'i z Tylnej alejki odcinają kuchnię, short i exit, Mendi na starcie rzuca insta okno i trzyma mid przed rotacją.\nKupno: smoke + flash, entry 2× flash.",
+      "image": "assets/tactics/mirage/pistol.png",
       "steps": [
         "Start rundy: Mendi rzuca insta okno z T spawnu (lineup z numerem Twojej pozycji na spawnie). Reszta biegnie Tylną alejką.",
         "Tylna alejka: Rond smoke B kuchnia, Teey smoke B short, Ciomka smoke B exit — rzuty razem, na komendę.",
@@ -59,6 +60,7 @@
       "A": {
         "title": "Execute A: rampa + pałac",
         "summary": "Pełny execute A. Trzech z rampy (Uliczka pałacowa), jeden z pałacu, AWP trzyma mid po insta oknie. Smoke'i CT, jungle, schody i top con lecą razem, molotovy czyszczą kanapkę i pod drewnem.",
+        "image": "assets/tactics/mirage/execute-a.png",
         "steps": [
           "Start rundy: Mendi insta okno z T spawnu. Ciomka idzie do pałacu, reszta na Uliczkę pałacową.",
           "Na komendę razem: Rond smoke A na CT, Teey smoke A jungle, MrPatyk smoke A top con, Ciomka smoke A schody v2 z pałacu (prawy + lewy jumpthrow).",
@@ -113,6 +115,7 @@
       "B": {
         "title": "Execute B z Mieszkań",
         "summary": "Execute B: czterech przez Tylną alejkę i Mieszkania, Ciomka lurkuje na górze środka i odcina rotację przez con. Smoke'i kuchnia, short i exit z Tylnej alejki, flash B entry z Mieszkań.",
+        "image": "assets/tactics/mirage/execute-b.png",
         "steps": [
           "Start rundy: Mendi insta okno z T spawnu, potem dołącza do Tylnej alejki. Ciomka idzie na górę środka.",
           "Tylna alejka, na komendę razem: Rond smoke B kuchnia, Teey smoke B short, MrPatyk smoke B exit.",
