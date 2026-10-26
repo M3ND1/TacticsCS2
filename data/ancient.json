@@ -2,10 +2,168 @@
   "id": "ancient",
   "name": "Ancient",
   "strategies": {
-    "pistol": null,
+    "pistol": {
+      "title": "Szybkie B",
+      "summary": "Pistolówka: szybkie B z dwoma smoke'ami (long i short) i flashami entry. Rond trzyma cave od strony mid, Ciomka rzuca insta red na starcie.\nKupno: smoke + flash, entry 2× flash.",
+      "steps": [
+        "Start rundy: Ciomka insta red z T spawnu (lineup 1, 4 albo 5 wg pozycji; z innej pozycji Mid red). Rond idzie mid w stronę cave.",
+        "Teey smoke B long z Ruin, MrPatyk smoke B short sprzed bramy — razem, na komendę.",
+        "MrPatyk flash B entry z Ruin → Mendi wchodzi pierwszy, Teey trade.",
+        "Plant na B. Rond pilnuje cave, Ciomka dochodzi jako ostatni i trzyma flankę."
+      ],
+      "assignments": [
+        {
+          "role": "entry",
+          "position": "Ruiny → B",
+          "utility": "2× flash",
+          "action": "pierwszy na B",
+          "timing": "1.",
+          "notes": "trade: second"
+        },
+        {
+          "role": "second",
+          "position": "Ruiny",
+          "utility": "smoke B long + flash",
+          "action": "smoke, potem drugi na site",
+          "timing": "2.",
+          "notes": ""
+        },
+        {
+          "role": "support",
+          "position": "Przed brama → Ruiny",
+          "utility": "smoke B short + flash B entry",
+          "action": "flash dla entry, trzeci na site",
+          "timing": "3.",
+          "notes": ""
+        },
+        {
+          "role": "awp",
+          "position": "T spawn → B",
+          "utility": "smoke insta red",
+          "action": "insta red na starcie, potem ostatni na B",
+          "timing": "4.",
+          "notes": ""
+        },
+        {
+          "role": "lurk",
+          "position": "Mid → cave",
+          "utility": "",
+          "action": "trzyma cave, info o rotacji przez mid",
+          "timing": "przez całą rundę",
+          "notes": ""
+        }
+      ],
+      "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+    },
     "execute": {
-      "A": null,
-      "B": null
+      "A": {
+        "title": "Execute A przez A main",
+        "summary": "Execute A: trzech przez A main, Rond na Dworze odcina donut, Ciomka trzyma mid po insta red. Smoke'i CT, temple i donut lecą razem.",
+        "steps": [
+          "Start rundy: Ciomka insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red) i trzyma mid.",
+          "Na komendę razem: Teey smoke A temple sprzed A, MrPatyk smoke A na CT z Dworu, Rond smoke A donut z Dworu.",
+          "MrPatyk flash nad A main → Mendi wchodzi pierwszy, Teey trade, MrPatyk trzeci.",
+          "Rond trzyma krawędź smoke'a na donucie przed rotacją z mid.",
+          "Plant na A. Ciomka pilnuje mid i łapie rotację, Rond dochodzi przez donut, gdy smoke zejdzie."
+        ],
+        "assignments": [
+          {
+            "role": "entry",
+            "position": "A main",
+            "utility": "2× flash",
+            "action": "pierwszy na A",
+            "timing": "1.",
+            "notes": "trade: second"
+          },
+          {
+            "role": "second",
+            "position": "Przed A",
+            "utility": "smoke A temple + flash",
+            "action": "drugi na site, trade za entry",
+            "timing": "2.",
+            "notes": ""
+          },
+          {
+            "role": "support",
+            "position": "Dwór → A main",
+            "utility": "smoke A na CT + flash",
+            "action": "flash dla entry, trzeci na site",
+            "timing": "3.",
+            "notes": ""
+          },
+          {
+            "role": "lurk",
+            "position": "Dwór",
+            "utility": "smoke A donut",
+            "action": "trzyma donut przed rotacją z mid",
+            "timing": "w trakcie execute",
+            "notes": ""
+          },
+          {
+            "role": "awp",
+            "position": "T spawn → mid",
+            "utility": "smoke insta red",
+            "action": "trzyma mid, łapie rotację",
+            "timing": "start rundy",
+            "notes": ""
+          }
+        ],
+        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+      },
+      "B": {
+        "title": "Execute B z molotovami",
+        "summary": "Pełny execute B: smoke'i long i short, molotovy BS i ninja, flashe entry i oneway. Rond smoke'uje donut od strony mid, żeby spowolnić rotację z A.",
+        "steps": [
+          "Start rundy: Ciomka insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red). Rond idzie na Dwór.",
+          "Na komendę razem: Teey smoke B long z Ruin, MrPatyk smoke B short sprzed bramy, Rond smoke Mid donut z Dworu.",
+          "Molotovy z dolnej strony T: MrPatyk molo B ninja, Ciomka molo B BS.",
+          "Mendi flash B oneway, Teey flash B entry z Ruin → Mendi wchodzi pierwszy, Teey trade.",
+          "Plant na B. Ciomka ostatni, trzyma cave i flankę, Rond pilnuje mid."
+        ],
+        "assignments": [
+          {
+            "role": "entry",
+            "position": "Dolna strona T → B",
+            "utility": "flash B oneway + flash",
+            "action": "pierwszy na B",
+            "timing": "1.",
+            "notes": "trade: second"
+          },
+          {
+            "role": "second",
+            "position": "Ruiny → B",
+            "utility": "smoke B long + flash B entry",
+            "action": "flash dla entry, drugi na site",
+            "timing": "2.",
+            "notes": ""
+          },
+          {
+            "role": "support",
+            "position": "Przed brama → dolna strona T",
+            "utility": "smoke B short + molo B ninja",
+            "action": "trzeci na site",
+            "timing": "3.",
+            "notes": ""
+          },
+          {
+            "role": "awp",
+            "position": "T spawn → dolna strona T",
+            "utility": "smoke insta red + molo B BS",
+            "action": "insta red na starcie, ostatni na B, trzyma cave",
+            "timing": "4.",
+            "notes": ""
+          },
+          {
+            "role": "lurk",
+            "position": "Dwór → mid",
+            "utility": "smoke Mid donut",
+            "action": "spowalnia rotację z A przez donut, potem pilnuje mid",
+            "timing": "w trakcie execute",
+            "notes": ""
+          }
+        ],
+        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+      }
     },
     "backup": null
   },
@@ -17,6 +175,7 @@
       "name": "A temple",
       "target": "A Temple",
       "side": "T",
+      "site": "A",
       "from": "Przed A",
       "throw": "jumpthrow",
       "aspect": "16:9",
@@ -31,6 +190,7 @@
       "name": "A donut",
       "target": "Donut",
       "side": "T",
+      "site": "A",
       "from": "Dwór",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/A-smoke-donut.jpg",
@@ -44,6 +204,7 @@
       "name": "A na CT",
       "target": "CT (A)",
       "side": "T",
+      "site": "A",
       "from": "Dwór",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/A-smoke-na-ct.jpg",
@@ -57,6 +218,7 @@
       "name": "B Short",
       "target": "B Short",
       "side": "T",
+      "site": "B",
       "from": "Przed brama",
       "throw": "jumpthrow",
       "aspect": "16:9",
@@ -71,6 +233,7 @@
       "name": "B long",
       "target": "B long",
       "side": "T",
+      "site": "B",
       "from": "Ruiny",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/B-smoke-long.jpg",
@@ -84,6 +247,7 @@
       "name": "B entry",
       "target": "Wejście na B",
       "side": "T",
+      "site": "B",
       "from": "Ruiny",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/B-flash-entry.jpg",
@@ -97,6 +261,7 @@
       "name": "B oneway",
       "target": "B oneway",
       "side": "T",
+      "site": "B",
       "from": "Dolna strona T",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/B-flash-oneway.jpg",
@@ -110,6 +275,7 @@
       "name": "B BS",
       "target": "BS",
       "side": "T",
+      "site": "B",
       "from": "Dolna strona T",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/B-molo-bs.jpg",
@@ -123,6 +289,7 @@
       "name": "B ninja",
       "target": "Ninja",
       "side": "T",
+      "site": "B",
       "from": "Dolna strona T",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/B-molo-ninja.jpg",
@@ -136,6 +303,7 @@
       "name": "Mid flash",
       "target": "Mid",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-flash.jpg",
@@ -149,6 +317,7 @@
       "name": "Mid donut",
       "target": "Donut",
       "side": "T",
+      "site": "Mid",
       "from": "Dwór",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-donut.jpg",
@@ -162,6 +331,7 @@
       "name": "Mid heaven",
       "target": "Heaven",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-heaven.jpg",
@@ -175,6 +345,7 @@
       "name": "Mid red",
       "target": "Red",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-red.jpg",
@@ -188,6 +359,7 @@
       "name": "Insta red 1 (T spawn)",
       "target": "Red",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn (1)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-red-insta-t-spawn-1.jpg",
@@ -201,6 +373,7 @@
       "name": "Insta red 4 (T spawn)",
       "target": "Red",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn (4)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-red-insta-t-spawn-4.jpg",
@@ -214,6 +387,7 @@
       "name": "Insta red 5 (T spawn)",
       "target": "Red",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn (5)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-red-insta-t-spawn-5.jpg",
@@ -227,6 +401,7 @@
       "name": "Insta mid 1 (CT spawn)",
       "target": "Mid",
       "side": "CT",
+      "site": "Mid",
       "from": "CT spawn (1)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-1.jpg",
@@ -240,6 +415,7 @@
       "name": "Insta mid 2 (CT spawn)",
       "target": "Mid",
       "side": "CT",
+      "site": "Mid",
       "from": "CT spawn (2)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-2.jpg",
@@ -253,6 +429,7 @@
       "name": "Insta mid 3 (CT spawn)",
       "target": "Mid",
       "side": "CT",
+      "site": "Mid",
       "from": "CT spawn (3)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-3.jpg",
@@ -266,6 +443,7 @@
       "name": "Insta mid 4 (CT spawn)",
       "target": "Mid",
       "side": "CT",
+      "site": "Mid",
       "from": "CT spawn (4)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-4.jpg",
@@ -279,6 +457,7 @@
       "name": "Insta mid 5 (CT spawn)",
       "target": "Mid",
       "side": "CT",
+      "site": "Mid",
       "from": "CT spawn (5)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-5.jpg",

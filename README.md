@@ -47,7 +47,7 @@ python3 tools/validate.py       # Windows: py tools/validate.py
 
 (W kolejnych krokach `python3` zamień na `py`, jeśli jesteś na Windows.)
 
-Sprawdza składnię JSON, odwołania do ról i graczy, unikalność id, czy każdy obrazek istnieje **i czy wielkość liter w nazwie pliku się zgadza**. macOS i Windows ignorują wielkość liter, GitHub Pages nie — `Window.png` ≠ `window.png`. Najprościej: nazwy plików zawsze małymi literami.
+Sprawdza składnię JSON, odwołania do ról i graczy, unikalność id, czy każdy obrazek istnieje **i czy wielkość liter w nazwie pliku się zgadza**. macOS i Windows ignorują wielkość liter, GitHub Pages nie — `Window.png` ≠ `window.png`. Najprościej: kopiuj nazwę pliku do JSON-a znak w znak, bez spacji i polskich liter.
 
 Walidator sprawdza też (gdy folder jest repozytorium git), czy każdy plik danych i obrazek jest **dodany do gita** pod dokładnie tą nazwą — na GitHub trafia tylko to, co git śledzi. Plik, którego nazwę zmieniono tylko wielkością liter (np. `Stara.png` → `stara.png`), na macOS i Windows wymaga `git mv -f Stara.png stara.png`, inaczej git zachowa starą nazwę. Nowe screenshoty trzeba dodać przez `git add`.
 
@@ -57,23 +57,24 @@ Problemy w danych widać też na stronie — pasek „⚠ N problemów w danych�
 
 Wszystkie mapy i foldery graczy już istnieją (`assets/lineups/<mapa>/<gracz>/`). Dodajesz tylko zdjęcie i jeden wpis:
 
-1. Zrób screenshot w grze. Zapisz go jako np.
-   `assets/lineups/mirage/mendi/window-t-spawn-16x9.png`
-   (folder = id mapy / id gracza; w nazwie pliku proporcje).
+1. Zrób screenshot w grze (Steam F12 zapisuje JPG). Zapisz go jako np.
+   `assets/lineups/mirage/mendi/Mid-smoke-okno.jpg`
+   (folder = id mapy / id gracza; nazwa pliku: `Rejon-typ-cel.jpg`).
 2. Dopisz wpis do `"lineups"` w `data/mirage.json`:
 
    ```json
    {
-     "id": "window-t-spawn",
+     "id": "mid-okno",
      "player": "mendi",
      "type": "smoke",
-     "name": "Window",
-     "target": "Mid window",
+     "name": "Mid okno",
+     "target": "Okno",
      "side": "T",
+     "site": "Mid",
      "from": "T spawn",
      "throw": "jumpthrow",
      "aspect": "16:9",
-     "image": "assets/lineups/mirage/mendi/window-t-spawn-16x9.png",
+     "image": "assets/lineups/mirage/mendi/Mid-smoke-okno.jpg",
      "instructions": "Stań w rogu przy ...",
      "notes": ""
    }
@@ -81,11 +82,14 @@ Wszystkie mapy i foldery graczy już istnieją (`assets/lineups/<mapa>/<gracz>/`
 
    Wymagane: `id`, `player`, `type`, `name`, `target`, `side` (`T` albo `CT`), `aspect`, `image`. Reszta jest opcjonalna.
    - `type`: `"smoke"` (szary), `"flash"` (żółty) albo `"molotov"` (czerwony).
+   - `site`: rejon mapy — `"A"`, `"B"` albo `"Mid"`. Po nim działa filtr „Rejon” na liście lineupów; lineup bez `site` widać tylko przy „Wszystkie”.
    - `aspect`: proporcje ekranu, pod które działa lineup: `"4:3"`, `"4:3 stretched"` (rozciągnięte), `"16:9"` albo `"21:9"`. Rozdzielczość w pikselach (1080p, 1440p, 4K) nie ma znaczenia — liczą się proporcje.
    - `id` musi być unikalne w obrębie mapy — przypisane są do niego prywatne notatki, więc lepiej go potem nie zmieniać.
 3. `python3 tools/validate.py`, potem `git add`, `git commit`, `git push`.
 
-Samo skopiowanie obrazka do folderu **nie** wystarczy — strona statyczna nie widzi zawartości folderów, dlatego każdy obrazek musi mieć wpis w JSON. Przykładowe lineupy (`"example": true`) możesz usunąć z JSON-a razem z ich plikami `.svg`.
+Samo skopiowanie obrazka do folderu **nie** wystarczy — strona statyczna nie widzi zawartości folderów, dlatego każdy obrazek musi mieć wpis w JSON.
+
+Lista lineupów gracza ma filtry: **Typ** (smoke / flash / molotov), **Rejon** (A / B / Mid) i **Strona** (T / CT).
 
 Ten sam lineup pod inne proporcje = osobny wpis z innym `id`, `aspect` i plikiem.
 

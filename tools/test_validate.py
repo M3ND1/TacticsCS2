@@ -141,6 +141,14 @@ class ValidateTest(unittest.TestCase):
         self.assertProblem('lineup "l1": "type" musi być jednym z: smoke, flash, molotov')
         self.assertProblem('lineup "l1": "aspect" musi być jednym z: 4:3, 4:3 stretched, 16:9, 21:9')
 
+    def test_lineup_site(self):
+        m = mirage()
+        base = m["lineups"][0]
+        m["lineups"] = [dict(base, id="l1", site="A"), dict(base, id="l2", site="Mid"), dict(base, id="l3"),
+                        dict(base, id="l4", site="a")]
+        self.write("data/mirage.json", m)
+        self.assertEqual(self.problems(), ['data/mirage.json: lineup "l4": "site" musi być jednym z: A, B, Mid'])
+
     def test_all_aspects_and_types_accepted(self):
         m = mirage()
         base = m["lineups"][0]

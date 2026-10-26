@@ -123,6 +123,7 @@ const Core = (() => {
   const ASPECTS = ["4:3", "4:3 stretched", "16:9", "21:9"];
   const TYPES = ["smoke", "flash", "molotov"];
   const SIDES = ["T", "CT"];
+  const SITES = ["A", "B", "Mid"];
   const RELATIVE_HINT = "musi być względna (bez / na początku, bez .., bez http)";
 
   const isObj = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
@@ -379,6 +380,7 @@ const Core = (() => {
       if (isText(l.player) && playerIds && !playerIds.has(l.player)) p(`lineup "${name}": nieznany gracz "${l.player}"`);
       if (isText(l.image) && !isRelativePath(l.image)) p(`lineup "${name}": ścieżka "image" ${RELATIVE_HINT}`);
       if (isText(l.type) && !TYPES.includes(l.type)) p(`lineup "${name}": "type" musi być jednym z: ${TYPES.join(", ")}`);
+      if (l.site != null && !SITES.includes(l.site)) p(`lineup "${name}": "site" musi być jednym z: ${SITES.join(", ")}`);
       if (isText(l.aspect) && !ASPECTS.includes(l.aspect)) p(`lineup "${name}": "aspect" musi być jednym z: ${ASPECTS.join(", ")}`);
       if ("resolution" in l) p(`lineup "${name}": pole "resolution" nie jest już używane — użyj "aspect"`);
     });
@@ -482,11 +484,11 @@ const Core = (() => {
   // facet values in a fixed, meaningful order (not alphabetical)
   function lineupFacets(lineups) {
     const present = (order, key) => order.filter((v) => lineups.some((l) => l[key] === v));
-    return { types: present(TYPES, "type"), sides: present(SIDES, "side"), aspects: present(ASPECTS, "aspect") };
+    return { types: present(TYPES, "type"), sites: present(SITES, "site"), sides: present(SIDES, "side") };
   }
 
-  function filterLineups(lineups, { type, side, aspect } = {}) {
-    return lineups.filter((l) => (type == null || l.type === type) && (side == null || l.side === side) && (aspect == null || l.aspect === aspect));
+  function filterLineups(lineups, { type, site, side } = {}) {
+    return lineups.filter((l) => (type == null || l.type === type) && (site == null || l.site === site) && (side == null || l.side === side));
   }
 
   // Split free text into plain parts and grenade words (smoke…, flash…, molo…/molotov, incendiary).
@@ -937,7 +939,7 @@ function lineupRow(l, mapId, file, myAspect) {
       Core.aspectMismatch(l.aspect, myAspect)
         ? h("p", { class: "warn" }, `⚠ Lineup pod ${aspect} — Ty grasz na ${Core.formatAspect(myAspect)}, może nie wejść.`)
         : null,
-      h("dl", { class: "kv" }, kv("Cel", l.target), kv("Strona", l.side), kv("Skąd", l.from), kv("Rzut", l.throw)),
+      h("dl", { class: "kv" }, kv("Cel", l.target), kv("Rejon", l.site), kv("Strona", l.side), kv("Skąd", l.from), kv("Rzut", l.throw)),
       l.instructions ? [h("h2", null, "Instrukcja"), h("p", { class: "pre" }, l.instructions)] : null,
       l.notes ? [h("h2", null, "Notatki zespołu"), h("p", { class: "pre" }, l.notes)] : null,
       notesWidget(mapId, `lineup:${l.id}`)));
@@ -976,7 +978,7 @@ VIEWS.lineupy = (main, { map, state }) => {
 
   const me = app.team.players.find((p) => p.id === currentMe());
   const myAspect = me ? me.aspect : null;
-  const filter = { type: null, side: null, aspect: null };
+  const filter = { type: null, site: null, side: null };
   const list = h("div");
   const draw = () => {
     const shown = Core.filterLineups(mine, filter);
@@ -1004,8 +1006,8 @@ VIEWS.lineupy = (main, { map, state }) => {
   content.append(
     h("div", { class: "filters" },
       chips("Typ:", "type", facets.types, (v) => h("span", { class: `ut-${v}` }, TYPE_LABELS[v])),
-      chips("Strona:", "side", facets.sides, (v) => v),
-      chips("Proporcje:", "aspect", facets.aspects, Core.formatAspect)),
+      chips("Rejon:", "site", facets.sites, (v) => v),
+      chips("Strona:", "side", facets.sides, (v) => v)),
     list);
   draw();
 };

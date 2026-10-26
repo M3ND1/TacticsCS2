@@ -3,189 +3,171 @@
   "name": "Mirage",
   "strategies": {
     "pistol": {
-      "example": true,
-      "title": "PRZYKŁAD — pistolówka (podmień na własną)",
-      "summary": "To jest przykładowy wpis, który pokazuje format danych. To NIE jest taktyka zespołu.\nZastąp tytuł, opis, obrazek, kroki i tabelę własną strategią w data/mirage.json.",
-      "image": "assets/tactics/mirage/pistol.svg",
+      "title": "Szybkie B przez Mieszkania",
+      "summary": "Pistolówka: cała piątka na B przez Mieszkania. Trzy smoke'i z Tylnej alejki odcinają kuchnię, short i exit, Ciomka na starcie rzuca insta okno i trzyma mid przed rotacją.\nKupno: smoke + flash, entry 2× flash.",
       "steps": [
-        "Krok 1 — opisz, co robicie na starcie rundy.",
-        "Krok 2 — opisz moment wejścia lub zmiany.",
-        "Krok 3 — opisz plan po zdobyciu lub utracie przewagi."
+        "Start rundy: Ciomka rzuca insta okno z T spawnu (lineup z numerem Twojej pozycji na spawnie). Reszta biegnie Tylną alejką.",
+        "Tylna alejka: Teey smoke B kuchnia, MrPatyk smoke B short, Rond smoke B exit — rzuty razem, na komendę.",
+        "Mieszkania: MrPatyk flash B entry nad wyjściem, Mendi wchodzi pierwszy, Teey trade.",
+        "Plant na B. Rond pilnuje Mieszkań od tyłu, Ciomka dochodzi z mid przez Mieszkania."
       ],
       "assignments": [
         {
           "role": "entry",
-          "position": "np. pozycja startowa",
-          "utility": "np. flash",
-          "action": "opis zadania",
-          "timing": "np. 0:10",
-          "notes": ""
+          "position": "Mieszkania",
+          "utility": "2× flash",
+          "action": "pierwszy z Mieszkań na B, czyści bench i van",
+          "timing": "1.",
+          "notes": "trade: second"
         },
         {
           "role": "second",
-          "position": "np. pozycja startowa",
-          "utility": "np. smoke",
-          "action": "opis zadania",
-          "timing": "po wejściu entry",
+          "position": "Tylna alejka → Mieszkania",
+          "utility": "smoke B kuchnia + flash",
+          "action": "smoke w biegu, potem drugi na site",
+          "timing": "2.",
           "notes": ""
         },
         {
           "role": "support",
-          "position": "np. pozycja startowa",
-          "utility": "np. smoke",
-          "action": "opis zadania",
-          "timing": "",
+          "position": "Tylna alejka → Mieszkania",
+          "utility": "smoke B short + flash B entry",
+          "action": "flash dla entry nad wyjściem z Mieszkań",
+          "timing": "3.",
           "notes": ""
         },
         {
           "role": "lurk",
-          "position": "np. pozycja startowa",
-          "utility": "",
-          "action": "opis zadania",
-          "timing": "",
+          "position": "Tylna alejka → Mieszkania",
+          "utility": "smoke B exit",
+          "action": "ostatni w Mieszkaniach, pilnuje pleców",
+          "timing": "4.",
           "notes": ""
         },
         {
           "role": "awp",
-          "position": "np. pozycja startowa",
-          "utility": "",
-          "action": "opis zadania",
-          "timing": "",
+          "position": "T spawn → mid",
+          "utility": "smoke insta okno",
+          "action": "insta okno na starcie, trzyma mid, dochodzi po plancie",
+          "timing": "start rundy",
           "notes": ""
         }
       ],
-      "notes": "Miejsce na wspólne notatki zespołu do tej strategii."
+      "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
     },
     "execute": {
       "A": {
-        "example": true,
-        "title": "PRZYKŁAD — execute A (podmień na własny)",
-        "summary": "Przykładowy wpis execute na bombsite A. To NIE jest taktyka zespołu.",
-        "image": "assets/tactics/mirage/execute-a.svg",
+        "title": "Execute A: rampa + pałac",
+        "summary": "Pełny execute A. Trzech z rampy (Uliczka pałacowa), jeden z pałacu, AWP trzyma mid po insta oknie. Smoke'i CT, jungle, schody i top con lecą razem, molotovy czyszczą kanapkę i pod drewnem.",
         "steps": [
-          "Krok 1 — ustawienie przed executem.",
-          "Krok 2 — utility (kolejność smoke'ów i flashy).",
-          "Krok 3 — kolejność wejścia i trade'y.",
-          "Krok 4 — plant i ustawienie po plancie."
+          "Start rundy: Ciomka insta okno z T spawnu. Rond idzie do pałacu, reszta na Uliczkę pałacową.",
+          "Na komendę razem: Teey smoke A na CT, MrPatyk smoke A jungle, Mendi smoke A top con, Rond smoke A schody v2 z pałacu (prawy + lewy jumpthrow).",
+          "Po 1–2 s molotovy: Teey molo A kanapka, Rond molo A pod drewnem.",
+          "MrPatyk flash A entry → Mendi wchodzi z rampy, Teey trade, Rond wychodzi z pałacu w tym samym momencie.",
+          "Plant default. Ciomka zostaje na mid i łapie rotację przez okno / short."
         ],
         "assignments": [
           {
             "role": "entry",
-            "position": "np. pozycja",
-            "utility": "np. 2× flash",
-            "action": "pierwszy na site",
+            "position": "Uliczka pałacowa → rampa",
+            "utility": "smoke A top con + 2× flash",
+            "action": "pierwszy z rampy, czyści triple i kanapkę",
             "timing": "1.",
             "notes": "trade: second"
           },
           {
             "role": "second",
-            "position": "np. pozycja",
-            "utility": "np. smoke",
-            "action": "drugi na site",
+            "position": "Uliczka pałacowa → rampa",
+            "utility": "smoke A na CT + molo A kanapka",
+            "action": "drugi z rampy, trade za entry",
+            "timing": "2.",
+            "notes": ""
+          },
+          {
+            "role": "lurk",
+            "position": "Wnętrze pałacu",
+            "utility": "smoke A schody v2 + molo A pod drewnem",
+            "action": "wychodzi z pałacu razem z entry",
+            "timing": "2.",
+            "notes": "schody v2: prawy + lewy jumpthrow"
+          },
+          {
+            "role": "support",
+            "position": "Uliczka pałacowa → rampa",
+            "utility": "smoke A jungle + flash A entry",
+            "action": "flash dla entry, wchodzi trzeci",
+            "timing": "3.",
+            "notes": ""
+          },
+          {
+            "role": "awp",
+            "position": "T spawn → mid",
+            "utility": "smoke insta okno",
+            "action": "trzyma mid, łapie rotację z okna i shortu",
+            "timing": "start rundy",
+            "notes": ""
+          }
+        ],
+        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+      },
+      "B": {
+        "title": "Execute B z Mieszkań",
+        "summary": "Execute B: czterech przez Tylną alejkę i Mieszkania, Rond lurkuje na górze środka i odcina rotację przez con. Smoke'i kuchnia, short i exit z Tylnej alejki, flash B entry z Mieszkań.",
+        "steps": [
+          "Start rundy: Ciomka insta okno z T spawnu, potem dołącza do Tylnej alejki. Rond idzie na górę środka.",
+          "Tylna alejka, na komendę razem: Teey smoke B kuchnia, MrPatyk smoke B short, Mendi smoke B exit.",
+          "Rond flash Mid con z góry środka i robi hałas na mid, żeby zatrzymać rotację.",
+          "Teey flash B entry → Mendi wchodzi pierwszy z Mieszkań, Teey trade, MrPatyk trzeci.",
+          "Plant na B. Ciomka trzyma Mieszkania i flankę, Rond rotuje przez underpass / short."
+        ],
+        "assignments": [
+          {
+            "role": "entry",
+            "position": "Tylna alejka → Mieszkania",
+            "utility": "smoke B exit + 2× flash",
+            "action": "pierwszy na B, czyści bench i van",
+            "timing": "1.",
+            "notes": "trade: second"
+          },
+          {
+            "role": "second",
+            "position": "Tylna alejka → Mieszkania",
+            "utility": "smoke B kuchnia + flash B entry",
+            "action": "flash dla entry, drugi na site",
             "timing": "2.",
             "notes": ""
           },
           {
             "role": "support",
-            "position": "np. pozycja",
-            "utility": "np. smoke + molotov",
-            "action": "utility z daleka",
-            "timing": "przed wejściem",
-            "notes": ""
-          },
-          {
-            "role": "lurk",
-            "position": "np. pozycja",
-            "utility": "",
-            "action": "kontrola rotacji",
-            "timing": "",
+            "position": "Tylna alejka → Mieszkania",
+            "utility": "smoke B short + flash",
+            "action": "trzeci na site, czyści short od strony site",
+            "timing": "3.",
             "notes": ""
           },
           {
             "role": "awp",
-            "position": "np. pozycja",
-            "utility": "np. flash",
-            "action": "pick przed executem",
-            "timing": "",
+            "position": "T spawn → Mieszkania",
+            "utility": "smoke insta okno",
+            "action": "insta okno na starcie, ostatni na B, trzyma flankę",
+            "timing": "4.",
+            "notes": ""
+          },
+          {
+            "role": "lurk",
+            "position": "Góra środka",
+            "utility": "flash Mid con",
+            "action": "lurk mid, odcina rotację przez con / short",
+            "timing": "w trakcie execute",
             "notes": ""
           }
         ],
-        "notes": ""
-      },
-      "B": null
+        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+      }
     },
-    "backup": {
-      "example": true,
-      "title": "PRZYKŁAD — backup (podmień na własny)",
-      "summary": "Przykładowa strategia awaryjna. Obrazek to wcześniej narysowany diagram (np. z Excalidraw lub Painta), zapisany jako PNG.",
-      "image": "assets/tactics/mirage/backup.svg",
-      "steps": [],
-      "assignments": [
-        {
-          "role": "entry",
-          "position": "np. pozycja",
-          "utility": "",
-          "action": "opis zadania",
-          "timing": "",
-          "notes": ""
-        },
-        {
-          "role": "awp",
-          "position": "np. pozycja",
-          "utility": "",
-          "action": "opis zadania",
-          "timing": "",
-          "notes": ""
-        }
-      ],
-      "notes": ""
-    }
+    "backup": null
   },
   "lineups": [
-    {
-      "id": "example-smoke-window",
-      "example": true,
-      "player": "mendi",
-      "type": "smoke",
-      "name": "PRZYKŁAD smoke",
-      "target": "np. Window",
-      "side": "T",
-      "from": "np. T spawn",
-      "throw": "np. jumpthrow",
-      "aspect": "16:9",
-      "image": "assets/lineups/mirage/mendi/example-smoke-window-16x9.svg",
-      "instructions": "Opisz, gdzie stanąć i gdzie celować.",
-      "notes": ""
-    },
-    {
-      "id": "example-flash-a",
-      "example": true,
-      "player": "mendi",
-      "type": "flash",
-      "name": "PRZYKŁAD flash",
-      "target": "np. A site",
-      "side": "T",
-      "from": "np. Palace",
-      "throw": "np. lewy przycisk",
-      "aspect": "4:3 stretched",
-      "image": "assets/lineups/mirage/mendi/example-flash-a-4x3-stretched.svg",
-      "instructions": "",
-      "notes": ""
-    },
-    {
-      "id": "example-molotov-jungle",
-      "example": true,
-      "player": "teey",
-      "type": "molotov",
-      "name": "PRZYKŁAD molotov",
-      "target": "np. Jungle",
-      "side": "T",
-      "from": "np. Connector",
-      "aspect": "21:9",
-      "image": "assets/lineups/mirage/teey/example-molotov-jungle-21x9.svg",
-      "instructions": "Lineup pod 21:9 — na innych proporcjach punkt celowania będzie inny.",
-      "notes": ""
-    },
     {
       "id": "a-flash-entry",
       "player": "teey",
@@ -193,6 +175,7 @@
       "name": "A entry",
       "target": "Wejście na A",
       "side": "T",
+      "site": "A",
       "from": "Uliczka pałacowa",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-flash-entry.jpg",
@@ -206,6 +189,7 @@
       "name": "A na CT",
       "target": "CT (A)",
       "side": "T",
+      "site": "A",
       "from": "Uliczka pałacowa",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-smoke-na-ct.jpg",
@@ -219,6 +203,7 @@
       "name": "A jungle",
       "target": "Jungle",
       "side": "T",
+      "site": "A",
       "from": "Uliczka pałacowa",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-smoke-jungle.jpg",
@@ -232,6 +217,7 @@
       "name": "A jungle v2",
       "target": "Jungle",
       "side": "T",
+      "site": "A",
       "from": "Wnętrze pałacu",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-smoke-jungle-v2.jpg",
@@ -245,6 +231,7 @@
       "name": "A schody",
       "target": "Schody",
       "side": "T",
+      "site": "A",
       "from": "Uliczka pałacowa",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-smoke-schody.jpg",
@@ -258,6 +245,7 @@
       "name": "A schody v2",
       "target": "Schody",
       "side": "T",
+      "site": "A",
       "from": "Wnętrze pałacu",
       "throw": "prawy + lewy jumpthrow",
       "aspect": "16:9",
@@ -272,6 +260,7 @@
       "name": "A top con",
       "target": "Top con",
       "side": "T",
+      "site": "A",
       "from": "Uliczka pałacowa",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-smoke-top-con.jpg",
@@ -285,6 +274,7 @@
       "name": "A kanapka",
       "target": "Kanapka",
       "side": "T",
+      "site": "A",
       "from": "Uliczka pałacowa",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-molo-kanapka.jpg",
@@ -298,6 +288,7 @@
       "name": "A pod drewnem",
       "target": "Pod drewnem",
       "side": "T",
+      "site": "A",
       "from": "Wnętrze pałacu",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-molo-pod-drewnem.jpg",
@@ -311,6 +302,7 @@
       "name": "A pod drewnem v2",
       "target": "Pod drewnem",
       "side": "T",
+      "site": "A",
       "from": "Wnętrze pałacu",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/A-molo-pod-drewnem-v2.jpg",
@@ -324,6 +316,7 @@
       "name": "B short",
       "target": "Short",
       "side": "T",
+      "site": "B",
       "from": "Tylna alejka",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/B-smoke-short.jpg",
@@ -337,9 +330,24 @@
       "name": "B exit",
       "target": "Exit",
       "side": "T",
+      "site": "B",
       "from": "Tylna alejka",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/B-smoke-exit.jpg",
+      "instructions": "",
+      "notes": ""
+    },
+    {
+      "id": "b-kuchnia",
+      "player": "teey",
+      "type": "smoke",
+      "name": "B kuchnia",
+      "target": "Kuchnia",
+      "side": "T",
+      "site": "B",
+      "from": "Tylna alejka",
+      "aspect": "16:9",
+      "image": "assets/lineups/mirage/teey/B-smoke-kuchnia.jpg",
       "instructions": "",
       "notes": ""
     },
@@ -350,6 +358,7 @@
       "name": "B entry",
       "target": "Wejście na B",
       "side": "T",
+      "site": "B",
       "from": "Mieszkania",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/B-flash-entry.jpg",
@@ -363,6 +372,7 @@
       "name": "Mid okno",
       "target": "Okno",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno.jpg",
@@ -376,6 +386,7 @@
       "name": "Mid con",
       "target": "Con",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-con.jpg",
@@ -389,6 +400,7 @@
       "name": "Mid short",
       "target": "Short",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-short.jpg",
@@ -402,6 +414,7 @@
       "name": "Mid con",
       "target": "Con",
       "side": "T",
+      "site": "Mid",
       "from": "Góra środka",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-flash-con.jpg",
@@ -415,6 +428,7 @@
       "name": "Insta okno 1 (T spawn)",
       "target": "Okno",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn (1)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-1.jpg",
@@ -428,6 +442,7 @@
       "name": "Insta okno 2 (T spawn)",
       "target": "Okno",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn (2)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-2.jpg",
@@ -441,6 +456,7 @@
       "name": "Insta okno 3 (T spawn)",
       "target": "Okno",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn (3)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-3.jpg",
@@ -454,6 +470,7 @@
       "name": "Insta okno 4 (T spawn)",
       "target": "Okno",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn (4)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-4.jpg",
@@ -467,6 +484,7 @@
       "name": "Insta okno 5 (T spawn)",
       "target": "Okno",
       "side": "T",
+      "site": "Mid",
       "from": "T spawn (5)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-5.jpg",

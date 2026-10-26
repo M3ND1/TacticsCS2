@@ -191,17 +191,30 @@ test("formatAspect and aspectMismatch", () => {
   assert.equal(Core.aspectMismatch(undefined, "16:9"), false);
 });
 
-test("lineupFacets and filterLineups use type, side and aspect", () => {
+test("lineupFacets and filterLineups use type, site and side", () => {
   const ls = [
-    { id: "a", type: "molotov", side: "T", aspect: "21:9" },
-    { id: "b", type: "smoke", side: "CT", aspect: "16:9" },
-    { id: "c", type: "smoke", side: "T", aspect: "4:3 stretched" },
+    { id: "a", type: "molotov", site: "B", side: "T", aspect: "21:9" },
+    { id: "b", type: "smoke", site: "Mid", side: "CT", aspect: "16:9" },
+    { id: "c", type: "smoke", site: "A", side: "T", aspect: "4:3 stretched" },
+    { id: "d", type: "smoke", side: "T", aspect: "16:9" },
   ];
-  assert.deepEqual(Core.lineupFacets(ls), { types: ["smoke", "molotov"], sides: ["T", "CT"], aspects: ["4:3 stretched", "16:9", "21:9"] });
-  assert.deepEqual(Core.filterLineups(ls, { type: "smoke", side: null, aspect: null }).map((l) => l.id), ["b", "c"]);
-  assert.deepEqual(Core.filterLineups(ls, { type: null, side: "T", aspect: null }).map((l) => l.id), ["a", "c"]);
-  assert.deepEqual(Core.filterLineups(ls, { type: "smoke", side: "T", aspect: "4:3 stretched" }).map((l) => l.id), ["c"]);
-  assert.deepEqual(Core.filterLineups(ls, {}).map((l) => l.id), ["a", "b", "c"]);
+  assert.deepEqual(Core.lineupFacets(ls), { types: ["smoke", "molotov"], sites: ["A", "B", "Mid"], sides: ["T", "CT"] });
+  assert.deepEqual(Core.filterLineups(ls, { type: "smoke", site: null, side: null }).map((l) => l.id), ["b", "c", "d"]);
+  assert.deepEqual(Core.filterLineups(ls, { type: null, site: null, side: "T" }).map((l) => l.id), ["a", "c", "d"]);
+  assert.deepEqual(Core.filterLineups(ls, { type: "smoke", site: "A", side: null }).map((l) => l.id), ["c"]);
+  assert.deepEqual(Core.filterLineups(ls, { type: null, site: "B", side: "T" }).map((l) => l.id), ["a"]);
+  assert.deepEqual(Core.filterLineups(ls, {}).map((l) => l.id), ["a", "b", "c", "d"]);
+});
+
+test("checkMap validates optional lineup site", () => {
+  const base = { id: "l1", player: "p1", name: "N", target: "T", side: "T", type: "smoke", aspect: "16:9", image: "a.png" };
+  const data = {
+    id: "mirage",
+    strategies: { pistol: null, execute: { A: null, B: null }, backup: null },
+    lineups: [{ ...base, site: "A" }, { ...base, id: "l2", site: "Mid" }, { ...base, id: "l3" }, { ...base, id: "l4", site: "a" }],
+  };
+  const msgs = Core.checkMap(data, "mirage", TEAM).map((p) => p.message);
+  assert.deepEqual(msgs, ['lineup "l4": "site" musi być jednym z: A, B, Mid']);
 });
 
 test("utilityTokens colours grenade words", () => {

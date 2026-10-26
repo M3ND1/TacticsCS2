@@ -21,6 +21,7 @@ SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 LINEUP_REQUIRED = ("id", "player", "name", "target", "side", "type", "aspect", "image")
 ASPECTS = ("4:3", "4:3 stretched", "16:9", "21:9")
 TYPES = ("smoke", "flash", "molotov")
+SITES = ("A", "B", "Mid")
 STRATEGY_SLOTS = ("pistol", "execute", "backup")
 VARIANTS = ("A", "B")
 RELATIVE_HINT = "musi być względna (bez / na początku, bez .., bez http)"
@@ -242,6 +243,8 @@ def check_map(data, map_id, team):
             p(f'lineup "{name}": ścieżka "image" {RELATIVE_HINT}')
         if is_text(l.get("type")) and l["type"] not in TYPES:
             p(f'lineup "{name}": "type" musi być jednym z: {", ".join(TYPES)}')
+        if l.get("site") is not None and l["site"] not in SITES:
+            p(f'lineup "{name}": "site" musi być jednym z: {", ".join(SITES)}')
         if is_text(l.get("aspect")) and l["aspect"] not in ASPECTS:
             p(f'lineup "{name}": "aspect" musi być jednym z: {", ".join(ASPECTS)}')
         if "resolution" in l:
