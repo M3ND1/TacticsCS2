@@ -34,6 +34,8 @@ index.html                  aplikacja (nie trzeba jej edytować przy dodawaniu t
 data/maps.json              lista map i ich kolejność
 data/team.json              role i gracze (skład + rezerwowi)
 data/<mapa>.json            strategie i lineupy dla mapy
+assets/maps/<mapa>.png      radar mapy (podkład tablicy taktycznej)
+assets/spawns/<mapa>/T.jpg, CT.jpg   screeny ponumerowanych spawnów (zakładka Insta smoke)
 assets/tactics/<mapa>/      screenshoty / diagramy strategii
 assets/lineups/<mapa>/<id-gracza>/   screenshoty lineupów
 tools/validate.py           sprawdzanie danych przed pushem
@@ -95,9 +97,18 @@ Ten sam lineup pod inne proporcje = osobny wpis z innym `id`, `aspect` i plikiem
 
 Gdy wybierzesz siebie w „Kim jestem”, przy lineupach pod inne proporcje niż Twoje zobaczysz ostrzeżenie „może nie wejść”.
 
-## Strategie (pistolówka, execute A/B, backup)
+## Insta smoke (zakładka na każdej mapie)
 
-Każda mapa ma dokładnie trzy sloty w `"strategies"`: `pistol`, `execute` (z wariantami `A` i `B`) oraz `backup` (inne klucze, np. literówka `pistolowka`, walidator zgłasza jako błąd). Każda strategia ma ten sam format:
+Zakładka **Insta smoke** pokazuje screen ponumerowanych spawnów T i CT oraz lineupy rzucane od razu ze spawnu, ułożone wg numeru.
+
+- Screen spawnów: zapisz jako `assets/spawns/<mapa>/T.jpg` / `CT.jpg` i wpisz w `data/<mapa>.json` (obok `"name"`):
+  `"spawns": { "T": "assets/spawns/mirage/T.jpg", "CT": "assets/spawns/mirage/CT.jpg" }`.
+- Lineup jest insta smoke'iem, gdy ma pole `"spawn"` — numer pozycji na spawnie (1–10), np. `"spawn": 3`. Taki lineup widać też normalnie w zakładce Lineupy.
+- Brakuje screenów spawnów **Ancient**.
+
+## Strategie (pistolówka, execute A, execute B, backup)
+
+Każda mapa ma dokładnie trzy sloty w `"strategies"`: `pistol`, `execute` (z wariantami `A` i `B` — na stronie to osobne zakładki „Execute A” i „Execute B”) oraz `backup` (inne klucze, np. literówka `pistolowka`, walidator zgłasza jako błąd). Każda strategia ma ten sam format:
 
 ```json
 {
@@ -127,7 +138,33 @@ Każda mapa ma dokładnie trzy sloty w `"strategies"`: `pistol`, `execute` (z wa
 
 Podmiana istniejącego screenshotu: nadpisz plik pod tą samą nazwą albo zmień ścieżkę `"image"`.
 
-Schematy pistolówki i execute A/B na Mirage i Ancient rysuje `tools/tactics_diagrams.py` (trasy graczy i rzuty są opisane w tym pliku). Nicki biorą się z ról w `data/team.json`, a legenda z tabeli strategii — po zmianie ról lub tabeli przerysuj je: `python3 tools/tactics_diagrams.py` (potrzebny Google Chrome).
+### Tablica taktyczna (radar z trasami i granatami)
+
+Strategia z polem `"board"` zamiast obrazka pokazuje tablicę w stylu cs2strats: radar mapy, trasy graczy w ich kolorach, granaty z linią rzutu i nickiem rzucającego. Kliknięcie kroku podświetla granaty z tego kroku. Nicki i kolory strona bierze z ról w `data/team.json`, więc zmiana ról niczego nie psuje.
+
+Mapa musi mieć radar (obok `"name"` w `data/<mapa>.json`):
+
+```json
+"radar": {
+  "image": "assets/maps/mirage.png",
+  "labels": [{ "text": "A", "at": [556, 792], "kind": "site" }, { "text": "Mid", "at": [575, 505] }]
+}
+```
+
+Tablica w strategii:
+
+```json
+"board": {
+  "players": { "entry": [[900, 368], [848, 625], [705, 662], [600, 742]] },
+  "grenades": [{ "role": "second", "type": "smoke", "from": [848, 625], "to": [415, 800], "step": 2 }]
+}
+```
+
+- Współrzędne to piksele radaru `[x, y]`, od 0 do 1024. **Kliknij mapę na stronie** — pod tablicą pojawi się punkt `[x, y]` do wklejenia.
+- `players`: trasa każdej roli (co najmniej 2 punkty); żeton z nickiem stoi na końcu trasy.
+- `grenades`: `type` = `smoke` / `flash` / `molotov`, `from` = skąd rzut, `to` = gdzie ląduje, `step` = numer kroku (opcjonalny).
+- `labels`: `kind` = `site` (duża litera), `spawn` albo `callout` (mały podpis, domyślnie).
+- Radary pochodzą z plików gry (repozytorium [MurkyYT/cs2-map-icons](https://github.com/MurkyYT/cs2-map-icons), `de_<mapa>_radar_psd.png`).
 
 Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola proporcji** (tylko lineupy je mają). Jeśli ma to znaczenie, dopisz proporcje do nazwy pliku, np. `execute-a-16x9.png`.
 
@@ -138,10 +175,11 @@ W kolumnie **Utility** tabel słowa smoke…, flash…, molo… / molotov i ince
 ```json
 {
   "roles":   [{ "id": "entry", "name": "Entry" }],
-  "players": [{ "id": "mendi", "name": "Mendi", "role": "entry", "status": "active", "aspect": "16:9" }]
+  "players": [{ "id": "mendi", "name": "Mendi", "role": "entry", "status": "active", "aspect": "16:9", "color": "#4aa8e0" }]
 }
 ```
 
+- `color`: kolor gracza na tablicy taktycznej i przy nicku w tabelach (`#RRGGBB`, opcjonalny).
 - `status`: `"active"` (skład) albo `"sub"` (rezerwowy). Liczba graczy jest dowolna.
 - `aspect`: proporcje ekranu gracza — `"4:3"`, `"4:3 stretched"`, `"16:9"`, `"21:9"` albo `null` (nieustawione, na stronie widać „?”). Widać je przy nicku w tabelach, na liście lineupów i w „Kim jestem” — reszta drużyny od razu wie, że ktoś gra na innych proporcjach i jego instant smoke może u nich nie wejść.
 - Role w `data/team.json` są na razie przykładowe — ustaw własne.
@@ -151,7 +189,7 @@ W kolumnie **Utility** tabel słowa smoke…, flash…, molo… / molotov i ince
 
 ## Nowa mapa
 
-Gotowe są: Mirage, Dust II, Inferno, Ancient, Nuke i Anubis (każda ma własny kolor `"accent"` w `data/maps.json`). Kolejną, np. Train, dodajesz tak:
+Gotowe są: Mirage, Dust II, Inferno, Ancient, Nuke, Anubis i Cache (każda ma własny kolor `"accent"` w `data/maps.json`). Kolejną, np. Train, dodajesz tak:
 
 1. Dopisz do tablicy `"maps"` w `data/maps.json` nowy wpis `{ "id": "train", "name": "Train", "accent": "#8a8fc9" }` (po przecinku po poprzednim wpisie; id: małe litery, cyfry, `-`; `accent` — kolor motywu mapy w formacie `#RRGGBB`, opcjonalny).
 2. Utwórz `data/train.json` — skopiuj `data/nuke.json` i zmień `"id"` i `"name"`. Pusty szkielet wygląda tak:
@@ -164,7 +202,7 @@ Gotowe są: Mirage, Dust II, Inferno, Ancient, Nuke i Anubis (każda ma własny 
 
 ## Prywatne notatki
 
-- Wybierz siebie w „Kim jestem”, a przy każdej strategii, wariancie execute, lineupie i w zakładce **Notatki** pojawi się pole „Moje notatki”.
+- Wybierz siebie w „Kim jestem”, a przy każdej strategii, lineupie i w zakładce **Notatki** pojawi się pole „Moje notatki”.
 - Notatki zapisują się automatycznie w **tej przeglądarce na tym urządzeniu** (localStorage). Nie synchronizują się między urządzeniami ani członkami drużyny i nie trafiają do repozytorium.
 - Wyczyszczenie danych przeglądarki usuwa notatki. **Eksport notatek** pobiera kopię zapasową (`cs2-notatki-RRRR-MM-DD.json`); **Import notatek** ją wczytuje (np. na innym komputerze).
 - Notatki są przypisane do **adresu strony**: te zapisane na `localhost` nie pojawią się na `github.io` (i odwrotnie). Przenieś je eksportem i importem.
@@ -172,7 +210,7 @@ Gotowe są: Mirage, Dust II, Inferno, Ancient, Nuke i Anubis (każda ma własny 
 
 ## Linki do konkretnych widoków
 
-Adres strony zapamiętuje widok, np. `…/#mirage/execute/B` albo `…/#mirage/lineupy/mendi` — można je wklejać na Discordzie.
+Adres strony zapamiętuje widok, np. `…/#mirage/execute-b`, `…/#ancient/insta` albo `…/#mirage/lineupy/mendi` — można je wklejać na Discordzie. Stare linki `…/#mirage/execute/B` nadal działają.
 
 ## Testy (dla osoby rozwijającej aplikację)
 

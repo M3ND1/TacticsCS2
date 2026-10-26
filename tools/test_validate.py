@@ -141,6 +141,56 @@ class ValidateTest(unittest.TestCase):
         self.assertProblem('lineup "l1": "type" musi być jednym z: smoke, flash, molotov')
         self.assertProblem('lineup "l1": "aspect" musi być jednym z: 4:3, 4:3 stretched, 16:9, 21:9')
 
+    def test_board_radar_spawns_and_spawn_number(self):
+        m = mirage()
+        m["radar"] = {"image": "assets/maps/mirage.png", "labels": [{"text": "A", "at": [10, 20], "kind": "site"}]}
+        m["spawns"] = {"T": "assets/spawns/mirage/T.jpg"}
+        m["strategies"]["pistol"]["board"] = {
+            "players": {"entry": [[1, 1], [500.5, 20]]},
+            "grenades": [{"role": "awp", "type": "smoke", "from": [1, 1], "to": [2, 2], "step": 1}],
+        }
+        m["lineups"][0]["spawn"] = 4
+        self.write("data/mirage.json", m)
+        self.assertEqual(self.problems(), [
+            'data/mirage.json: brak pliku obrazka "assets/maps/mirage.png"',
+            'data/mirage.json: brak pliku obrazka "assets/spawns/mirage/T.jpg"',
+        ])
+        self.write("assets/maps/mirage.png", "")
+        self.write("assets/spawns/mirage/T.jpg", "")
+        self.assertEqual(self.problems(), [])
+
+    def test_bad_board_radar_spawns(self):
+        m = mirage()
+        m["radar"] = {"image": "/abs.png", "labels": [{"text": "A"}, {"text": "B", "at": [1, 1], "kind": "big"}]}
+        m["spawns"] = {"T": "http://x/t.jpg", "X": "x.jpg"}
+        m["strategies"]["pistol"]["board"] = {
+            "players": {"ghost": [[1, 1], [2, 2]], "entry": [[1, 1]]},
+            "grenades": [{"role": "entry", "type": "he", "from": [1, 2], "to": [3, 4000], "step": 2}],
+        }
+        m["lineups"][0]["spawn"] = 11
+        self.write("data/mirage.json", m)
+        for fragment in [
+            'strategia "pistol": board.players: nieznana rola "ghost"',
+            'strategia "pistol": board.players.entry musi być listą co najmniej 2 punktów [x, y] (0–1024)',
+            'strategia "pistol": board.grenades[0]: "type" musi być jednym z: smoke, flash, molotov',
+            'strategia "pistol": board.grenades[0]: "from" i "to" muszą być punktami [x, y] (0–1024)',
+            'strategia "pistol": board.grenades[0]: "step" musi być numerem kroku 1–1',
+            'ścieżka "radar.image" musi być względna (bez / na początku, bez .., bez http)',
+            'radar.labels[0] musi mieć "text" i punkt "at" [x, y]',
+            'radar.labels[1]: "kind" musi być jednym z: site, spawn, callout',
+            'ścieżka "spawns.T" musi być względna (bez / na początku, bez .., bez http)',
+            'nieznany klucz "X" w "spawns" (dozwolone: T, CT)',
+            'lineup "l1": "spawn" musi być liczbą całkowitą 1–10',
+        ]:
+            self.assertProblem(fragment)
+
+    def test_player_color(self):
+        team = json.loads(json.dumps(TEAM))
+        team["players"][0]["color"] = "#4aa8e0"
+        team["players"][1]["color"] = "blue"
+        self.write("data/team.json", team)
+        self.assertEqual(self.problems(), ['data/team.json: gracz "p2": "color" musi być kolorem w formacie #RRGGBB'])
+
     def test_lineup_site(self):
         m = mirage()
         base = m["lineups"][0]

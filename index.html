@@ -78,6 +78,18 @@ th { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: upp
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; }
+.swatch { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+.board-svg { display: block; width: 100%; max-height: 80vh; background: #0b1016; border: 1px solid var(--border); border-radius: 4px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor: crosshair; }
+.board-svg .grenade { transition: opacity .15s; }
+.board-svg.focused .grenade:not(.on) { opacity: .12; }
+.board-svg.focused .routes { opacity: .45; }
+.coords { margin: 4px 0 0; font-size: 12px; }
+.hint { margin: 0 0 4px; font-size: 12px; }
+ol.steps li.step-btn { cursor: pointer; padding: 2px 6px; margin-left: -6px; border-radius: 3px; }
+ol.steps li.step-btn:hover { background: var(--panel); }
+ol.steps li.step-btn.on { background: var(--accent-bg); color: var(--text); outline: 1px solid var(--accent); }
+ol.spawnlist { margin: 0; padding-left: 0; list-style: none; }
+ol.spawnlist li { padding: 3px 0; border-bottom: 1px solid var(--border); }
 .fatal { max-width: 720px; margin: 48px auto; padding: 16px; border: 1px solid var(--err); }
 .fatal h1 { color: var(--err); margin-bottom: 8px; }
 #problems { position: fixed; left: 0; right: 0; bottom: 0; background: #231c12; border-top: 1px solid var(--warn); color: var(--warn); font-size: 12px; max-height: 40vh; overflow: auto; }
@@ -114,8 +126,11 @@ const Core = (() => {
   "use strict";
   const NOTE_PREFIX = "cs2pb:v1:notes:";
   const ME_KEY = "cs2pb:v1:me";
-  const TABS = ["pistolowka", "execute", "backup", "lineupy", "notatki"];
+  const TABS = ["pistolowka", "execute-a", "execute-b", "backup", "insta", "lineupy", "notatki"];
   const VARIANTS = ["A", "B"];
+  const SPAWN_SIDES = ["T", "CT"];
+  const LABEL_KINDS = ["site", "spawn", "callout"];
+  const RADAR_SIZE = 1024; // board coordinates are radar image pixels, 0..1024
   const STRATEGY_SLOTS = ["pistol", "execute", "backup"];
   const MAP_ID_RE = /^[a-z0-9-]+$/;
   const HEX_RE = /^#[0-9a-fA-F]{6}$/;
@@ -131,6 +146,8 @@ const Core = (() => {
   const isText = (x) => typeof x === "string" && x.trim() !== "";
   const isRelativePath = (x) =>
     isText(x) && !x.startsWith("/") && !/^[A-Za-z][A-Za-z0-9+.-]*:/.test(x) && !x.split("/").includes("..");
+  const isPoint = (x) =>
+    Array.isArray(x) && x.length === 2 && x.every((n) => typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= RADAR_SIZE);
 
   // ── JSON with reliable error positions (V8 omits them for some errors) ──
   function findJsonErrorOffset(text) {
@@ -240,12 +257,24 @@ const Core = (() => {
     };
   }
 
+  // keeps only the parts of a board the UI can draw; checkMap reports the rest
+  function normalizeBoard(b) {
+    if (!isObj(b)) return null;
+    const players = {};
+    for (const [role, route] of Object.entries(isObj(b.players) ? b.players : {})) {
+      if (Array.isArray(route) && route.length >= 2 && route.every(isPoint)) players[role] = route;
+    }
+    const grenades = arr(b.grenades).filter((g) => isObj(g) && TYPES.includes(g.type) && isPoint(g.from) && isPoint(g.to));
+    return { players, grenades };
+  }
+
   function normalizeStrategy(s) {
     if (!isObj(s)) return null;
     return {
       ...s,
       steps: arr(s.steps).filter((x) => typeof x === "string"),
       assignments: arr(s.assignments).filter(isObj),
+      board: normalizeBoard(s.board),
     };
   }
 
@@ -253,8 +282,15 @@ const Core = (() => {
     const d = isObj(data) ? data : {};
     const s = isObj(d.strategies) ? d.strategies : {};
     const ex = isObj(s.execute) ? s.execute : {};
+    const radar = isObj(d.radar) && isRelativePath(d.radar.image)
+      ? { image: d.radar.image, labels: arr(d.radar.labels).filter((l) => isObj(l) && isText(l.text) && isPoint(l.at)) }
+      : null;
+    const spawns = {};
+    for (const side of SPAWN_SIDES) if (isObj(d.spawns) && isRelativePath(d.spawns[side])) spawns[side] = d.spawns[side];
     return {
       name: d.name,
+      radar,
+      spawns,
       strategies: {
         pistol: normalizeStrategy(s.pistol),
         backup: normalizeStrategy(s.backup),
@@ -308,6 +344,9 @@ const Core = (() => {
       if (pl.aspect != null && !ASPECTS.includes(pl.aspect)) {
         p(`gracz "${pl.id}": "aspect" musi być jednym z: ${ASPECTS.join(", ")} albo null`);
       }
+      if (pl.color != null && !(typeof pl.color === "string" && HEX_RE.test(pl.color))) {
+        p(`gracz "${pl.id}": "color" musi być kolorem w formacie #RRGGBB`);
+      }
       if (pl.role == null) return;
       if (typeof pl.role !== "string" || !roleIds.has(pl.role)) return p(`gracz "${pl.id}": nieznana rola "${pl.role}"`);
       if (!statusOk) return;
@@ -329,6 +368,7 @@ const Core = (() => {
     if (st.steps != null && !(Array.isArray(st.steps) && st.steps.every((s) => typeof s === "string"))) {
       p(`strategia "${label}": "steps" musi być listą tekstów`);
     }
+    if (st.board != null) checkBoard(st.board, label, roleIds, Array.isArray(st.steps) ? st.steps.length : 0, p);
     if (st.assignments == null) return;
     if (!Array.isArray(st.assignments)) return p(`strategia "${label}": "assignments" musi być listą`);
     st.assignments.forEach((a, i) => {
@@ -337,6 +377,47 @@ const Core = (() => {
         p(`strategia "${label}": nieznana rola "${role ?? ""}" w assignments[${i}]`);
       }
     });
+  }
+
+  function checkBoard(b, label, roleIds, stepCount, p) {
+    const at = `strategia "${label}": board`;
+    if (!isObj(b)) return p(`${at} musi być obiektem`);
+    if (b.players != null && !isObj(b.players)) p(`${at}.players musi być obiektem {rola: [[x, y], ...]}`);
+    for (const [role, route] of Object.entries(isObj(b.players) ? b.players : {})) {
+      if (roleIds && !roleIds.has(role)) p(`${at}.players: nieznana rola "${role}"`);
+      if (!(Array.isArray(route) && route.length >= 2 && route.every(isPoint))) {
+        p(`${at}.players.${role} musi być listą co najmniej 2 punktów [x, y] (0–${RADAR_SIZE})`);
+      }
+    }
+    if (b.grenades != null && !Array.isArray(b.grenades)) p(`${at}.grenades musi być listą`);
+    arr(b.grenades).forEach((g, i) => {
+      const gat = `${at}.grenades[${i}]`;
+      if (!isObj(g)) return p(`${gat} musi być obiektem`);
+      if (roleIds && !(typeof g.role === "string" && roleIds.has(g.role))) p(`${gat}: nieznana rola "${g.role ?? ""}"`);
+      if (!TYPES.includes(g.type)) p(`${gat}: "type" musi być jednym z: ${TYPES.join(", ")}`);
+      if (!isPoint(g.from) || !isPoint(g.to)) p(`${gat}: "from" i "to" muszą być punktami [x, y] (0–${RADAR_SIZE})`);
+      if (g.step != null && !(Number.isInteger(g.step) && g.step >= 1 && g.step <= stepCount)) {
+        p(`${gat}: "step" musi być numerem kroku 1–${stepCount}`);
+      }
+    });
+  }
+
+  function checkRadar(r, p) {
+    if (!isObj(r)) return p('"radar" musi być obiektem z "image" i "labels"');
+    if (!isRelativePath(r.image)) p(`ścieżka "radar.image" ${RELATIVE_HINT}`);
+    if (r.labels != null && !Array.isArray(r.labels)) return p('"radar.labels" musi być listą');
+    arr(r.labels).forEach((l, i) => {
+      if (!isObj(l) || !isText(l.text) || !isPoint(l.at)) return p(`radar.labels[${i}] musi mieć "text" i punkt "at" [x, y]`);
+      if (l.kind != null && !LABEL_KINDS.includes(l.kind)) p(`radar.labels[${i}]: "kind" musi być jednym z: ${LABEL_KINDS.join(", ")}`);
+    });
+  }
+
+  function checkSpawns(sp, p) {
+    if (!isObj(sp)) return p('"spawns" musi być obiektem {"T": ścieżka, "CT": ścieżka}');
+    for (const [side, path] of Object.entries(sp)) {
+      if (!SPAWN_SIDES.includes(side)) p(`nieznany klucz "${side}" w "spawns" (dozwolone: ${SPAWN_SIDES.join(", ")})`);
+      else if (!isRelativePath(path)) p(`ścieżka "spawns.${side}" ${RELATIVE_HINT}`);
+    }
   }
 
   function checkMap(data, mapId, team) {
@@ -366,6 +447,8 @@ const Core = (() => {
         VARIANTS.forEach((v) => checkStrategy(s.execute[v], `execute.${v}`, roleIds, p));
       }
     }
+    if (data.radar != null) checkRadar(data.radar, p);
+    if (data.spawns != null) checkSpawns(data.spawns, p);
     if (data.lineups != null && !Array.isArray(data.lineups)) p('"lineups" musi być listą');
     const seen = new Set();
     arr(data.lineups).forEach((l, i) => {
@@ -381,6 +464,9 @@ const Core = (() => {
       if (isText(l.image) && !isRelativePath(l.image)) p(`lineup "${name}": ścieżka "image" ${RELATIVE_HINT}`);
       if (isText(l.type) && !TYPES.includes(l.type)) p(`lineup "${name}": "type" musi być jednym z: ${TYPES.join(", ")}`);
       if (l.site != null && !SITES.includes(l.site)) p(`lineup "${name}": "site" musi być jednym z: ${SITES.join(", ")}`);
+      if (l.spawn != null && !(Number.isInteger(l.spawn) && l.spawn >= 1 && l.spawn <= 10)) {
+        p(`lineup "${name}": "spawn" musi być liczbą całkowitą 1–10`);
+      }
       if (isText(l.aspect) && !ASPECTS.includes(l.aspect)) p(`lineup "${name}": "aspect" musi być jednym z: ${ASPECTS.join(", ")}`);
       if ("resolution" in l) p(`lineup "${name}": pole "resolution" nie jest już używane — użyj "aspect"`);
     });
@@ -415,32 +501,33 @@ const Core = (() => {
     return team.players.length ? team.players[0].id : null;
   }
 
-  // ── routing: #<map>/<tab>[/<variant|player>] ──
+  // ── routing: #<map>/<tab>[/<player>] ──
   function parseHash(hash, { mapIds, playerIds }) {
     const parts = String(hash || "").replace(/^#\/?/, "").split("/").map((x) => {
       try { return decodeURIComponent(x); } catch { return ""; }
     });
     const map = mapIds.includes(parts[0]) ? parts[0] : mapIds[0];
+    // old links: #<map>/execute/<A|B>
+    if (parts[1] === "execute") parts[1] = (parts[2] || "").toUpperCase() === "B" ? "execute-b" : "execute-a";
     const tab = TABS.includes(parts[1]) ? parts[1] : TABS[0];
-    const v = (parts[2] || "").toUpperCase();
-    const variant = tab === "execute" && VARIANTS.includes(v) ? v : "A";
     const player = tab === "lineupy" && playerIds.includes(parts[2]) ? parts[2] : null;
-    return { map, tab, variant, player };
+    return { map, tab, player };
   }
 
-  function buildHash({ map, tab, variant, player }) {
+  function buildHash({ map, tab, player }) {
     let hash = `#${encodeURIComponent(map)}/${tab}`;
-    if (tab === "execute") hash += `/${variant || "A"}`;
-    else if (tab === "lineupy" && player) hash += `/${encodeURIComponent(player)}`;
+    if (tab === "lineupy" && player) hash += `/${encodeURIComponent(player)}`;
     return hash;
   }
 
   // ── personal notes ──
   const noteKey = (playerId, mapId, context) => `${NOTE_PREFIX}${playerId}:${mapId}:${context}`;
 
-  function noteContext(tab, variant) {
+  // execute contexts keep their pre-split names so saved notes stay attached
+  function noteContext(tab) {
     if (tab === "pistolowka") return "pistol";
-    if (tab === "execute") return `execute-${variant}`;
+    if (tab === "execute-a") return "execute-A";
+    if (tab === "execute-b") return "execute-B";
     if (tab === "notatki") return "map";
     return tab;
   }
@@ -491,6 +578,13 @@ const Core = (() => {
     return lineups.filter((l) => (type == null || l.type === type) && (site == null || l.site === site) && (side == null || l.side === side));
   }
 
+  // instant smokes: lineups thrown from a numbered spawn, in spawn order
+  function instaLineups(lineups, side) {
+    return lineups
+      .filter((l) => l.side === side && Number.isInteger(l.spawn))
+      .sort((a, b) => a.spawn - b.spawn || String(a.name).localeCompare(String(b.name)));
+  }
+
   // Split free text into plain parts and grenade words (smoke…, flash…, molo…/molotov, incendiary).
   function utilityTokens(text) {
     const re = /\b(smoke|flash|molo|incendiary)[\p{L}'’]*/giu;
@@ -513,13 +607,13 @@ const Core = (() => {
   const mapAccent = (map) => (isObj(map) && typeof map.accent === "string" && HEX_RE.test(map.accent) ? map.accent : null);
 
   return {
-    NOTE_PREFIX, ME_KEY, TABS,
+    NOTE_PREFIX, ME_KEY, TABS, SPAWN_SIDES, RADAR_SIZE,
     parseJson, plural, normalizeTeam, normalizeMap,
     checkMapsIndex, checkTeam, checkMap,
     resolveRole, groupPlayers, validMe, defaultLineupPlayer,
     parseHash, buildHash,
     noteKey, noteContext, buildNotesExport, parseNotesImport, exportFilename,
-    formatAspect, aspectMismatch, lineupFacets, filterLineups, utilityTokens, mapAccent,
+    formatAspect, aspectMismatch, lineupFacets, filterLineups, instaLineups, utilityTokens, mapAccent,
   };
 })();
 </script>
@@ -560,7 +654,10 @@ const store = {
 
 const app = { maps: [], team: { roles: [], players: [] }, rawTeam: null, mapCache: new Map(), state: null, problems: new Map() };
 
-const TAB_LABELS = { pistolowka: "Pistolówka", execute: "Execute", backup: "Backup", lineupy: "Lineupy", notatki: "Notatki" };
+const TAB_LABELS = {
+  pistolowka: "Pistolówka", "execute-a": "Execute A", "execute-b": "Execute B", backup: "Backup",
+  insta: "Insta smoke", lineupy: "Lineupy", notatki: "Notatki",
+};
 
 async function loadJson(path) {
   let res;
@@ -632,7 +729,8 @@ function renderTabs() {
     "aria-selected": String(app.state.tab === t),
     onclick: () => navigate({ tab: t }),
   }, TAB_LABELS[t]);
-  $("#tabs").replaceChildren(tab("pistolowka"), tab("execute"), tab("backup"), h("span", { class: "sep" }), tab("lineupy"), tab("notatki"));
+  $("#tabs").replaceChildren(tab("pistolowka"), tab("execute-a"), tab("execute-b"), tab("backup"), h("span", { class: "sep" }),
+    tab("insta"), tab("lineupy"), tab("notatki"));
 }
 
 function navigate(partial) {
@@ -863,10 +961,19 @@ function utilityCell(text) {
   return Core.utilityTokens(text).map((t) => (t.type ? h("span", { class: `ut ut-${t.type}` }, t.text) : t.text));
 }
 
+const PLAYER_PALETTE = ["#4aa8e0", "#6cc06a", "#b07ee8", "#e07bb5", "#4fd1c5", "#f0a050", "#c9d36a"];
+
+// "color" from data/team.json, else a stable colour from the player's position in the list
+function playerColor(player) {
+  if (player.color) return player.color;
+  return PLAYER_PALETTE[Math.max(0, app.team.players.indexOf(player)) % PLAYER_PALETTE.length];
+}
+
 function playerCell(roleId) {
   const res = Core.resolveRole(app.team, roleId);
   if (res.kind === "none") return h("span", { class: "warn" }, "— brak gracza");
-  const names = res.players.map((p, i) => [i ? ", " : "", p.name || p.id, aspectTag(p)]);
+  const names = res.players.map((p, i) => [i ? ", " : "", h("span", { class: "swatch", style: `background:${playerColor(p)}` }),
+    p.name || p.id, aspectTag(p)]);
   return res.kind === "sub" ? [names, " ", h("span", { class: "muted" }, "(rezerwa)")] : names;
 }
 
@@ -883,23 +990,16 @@ function assignmentsTable(rows) {
 
 function renderStrategyTab(main, { map, state }) {
   const file = `data/${state.map}.json`;
-  const slot = { pistolowka: "pistol", execute: "execute", backup: "backup" }[state.tab];
-  if (slot === "execute") {
-    main.append(h("div", { class: "titlebar" },
-      h("span", { class: "muted" }, "Bombsite:"),
-      h("div", { class: "seg", role: "group", "aria-label": "Bombsite" }, ["A", "B"].map((v) => h("button", {
-        type: "button",
-        "aria-pressed": String(state.variant === v),
-        onclick: () => navigate({ variant: v }),
-      }, v)))));
-  }
-  const strat = slot === "execute" ? map.strategies.execute[state.variant] : map.strategies[slot];
-  const context = Core.noteContext(state.tab, state.variant);
+  const strat = {
+    pistolowka: map.strategies.pistol,
+    "execute-a": map.strategies.execute.A,
+    "execute-b": map.strategies.execute.B,
+    backup: map.strategies.backup,
+  }[state.tab];
+  const context = Core.noteContext(state.tab);
 
   if (!strat) {
-    main.append(h("div", { class: "empty" },
-      slot === "execute" ? `Brak strategii dla bombsite ${state.variant}.` : "Brak strategii.",
-      h("br"),
+    main.append(h("div", { class: "empty" }, `Brak strategii: ${TAB_LABELS[state.tab]}.`, h("br"),
       h("span", { class: "muted" }, `Dodaj ją w ${file}.`)));
     main.append(notesWidget(state.map, context));
     return;
@@ -909,10 +1009,22 @@ function renderStrategyTab(main, { map, state }) {
     h("h1", null, strat.title || "(bez tytułu)"),
     strat.example ? h("span", { class: "badge", title: "Przykładowe dane — podmień na własną strategię" }, "PRZYKŁAD") : null));
 
+  const board = strat.board && map.radar ? tacticBoard(map.radar, strat, file) : null;
+  const steps = strat.steps.map((s, i) => h("li", board ? {
+    class: "step-btn",
+    title: "Pokaż granaty z tego kroku",
+    onclick: (e) => {
+      const on = board.focus(board.focused === i + 1 ? null : i + 1);
+      for (const li of e.currentTarget.parentElement.children) li.classList.toggle("on", on === Number(li.dataset.step));
+    },
+    "data-step": i + 1,
+  } : null, s));
   const text = h("div", null,
     strat.summary ? [h("h2", null, "Opis"), h("p", { class: "pre" }, strat.summary)] : null,
-    strat.steps.length ? [h("h2", null, "Kroki"), h("ol", { class: "steps" }, strat.steps.map((s) => h("li", null, s)))] : null);
-  main.append(strat.image ? h("div", { class: "split" }, h("div", null, shot(strat.image, strat.title, file)), text) : text);
+    steps.length ? [h("h2", null, "Kroki"), board ? h("p", { class: "muted hint" }, "Kliknij krok, żeby podświetlić jego granaty na mapie.") : null,
+      h("ol", { class: "steps" }, steps)] : null);
+  const visual = board ? board.el : strat.image ? shot(strat.image, strat.title, file) : null;
+  main.append(visual ? h("div", { class: "split" }, h("div", null, visual), text) : text);
 
   if (strat.assignments.length) main.append(h("h2", null, "Zadania graczy"), assignmentsTable(strat.assignments));
   if (strat.notes) main.append(h("h2", null, "Notatki zespołu"), h("p", { class: "pre" }, strat.notes));
@@ -920,11 +1032,190 @@ function renderStrategyTab(main, { map, state }) {
 }
 
 VIEWS.pistolowka = renderStrategyTab;
-VIEWS.execute = renderStrategyTab;
+VIEWS["execute-a"] = renderStrategyTab;
+VIEWS["execute-b"] = renderStrategyTab;
 VIEWS.backup = renderStrategyTab;
 
+// ── tactic board: radar drawn like a strat board, routes and grenades in radar pixels ──
+const SVG_NS = "http://www.w3.org/2000/svg";
+function s(tag, attrs, ...children) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) if (v != null && v !== false) el.setAttribute(k, v);
+  for (const c of children.flat(Infinity)) if (c != null && c !== false) el.append(c instanceof Node ? c : String(c));
+  return el;
+}
+
+const BOARD_LINE = "#38c8dc";
+
+// navy floor, cyan outer wall, fainter cyan for boxes and stairs (edges of the radar's shading)
+function radarFilter(id) {
+  return s("filter", { id, x: 0, y: 0, width: 1, height: 1, "color-interpolation-filters": "sRGB" },
+    s("feComponentTransfer", { in: "SourceAlpha", result: "area" }, s("feFuncA", { type: "discrete", tableValues: "0 0 1 1" })),
+    s("feFlood", { "flood-color": "#10222e", result: "floorColor" }),
+    s("feComposite", { in: "floorColor", in2: "area", operator: "in", result: "floor" }),
+    s("feMorphology", { in: "area", operator: "erode", radius: 1.5, result: "inner" }),
+    s("feComposite", { in: "area", in2: "inner", operator: "out", result: "edge" }),
+    s("feFlood", { "flood-color": BOARD_LINE, result: "lineColor" }),
+    s("feComposite", { in: "lineColor", in2: "edge", operator: "in", result: "outline" }),
+    s("feColorMatrix", { in: "SourceGraphic", type: "luminanceToAlpha", result: "lum" }),
+    s("feConvolveMatrix", { in: "lum", order: 3, kernelMatrix: "-1 -1 -1 -1 8 -1 -1 -1 -1", preserveAlpha: "false", result: "lap" }),
+    s("feComponentTransfer", { in: "lap", result: "detailMask" }, s("feFuncA", { type: "linear", slope: 5, intercept: -0.15 })),
+    s("feComposite", { in: "detailMask", in2: "inner", operator: "in", result: "detailInside" }),
+    s("feFlood", { "flood-color": BOARD_LINE, "flood-opacity": 0.5, result: "detailColor" }),
+    s("feComposite", { in: "detailColor", in2: "detailInside", operator: "in", result: "detail" }),
+    s("feMerge", null, s("feMergeNode", { in: "floor" }), s("feMergeNode", { in: "detail" }), s("feMergeNode", { in: "outline" })));
+}
+
+function grenadeMark(type, [x, y]) {
+  const cls = `ut-${type}`;
+  if (type === "smoke") return s("circle", { class: cls, cx: x, cy: y, r: 26, style: "fill:currentColor;fill-opacity:.38;stroke:currentColor;stroke-width:2" });
+  if (type === "molotov") return s("circle", { class: cls, cx: x, cy: y, r: 20, style: "fill:currentColor;fill-opacity:.45;stroke:currentColor;stroke-width:2.5" });
+  const pts = Array.from({ length: 16 }, (_, i) => {
+    const r = i % 2 ? 7 : 18, a = (i * Math.PI) / 8;
+    return `${(x + r * Math.cos(a)).toFixed(1)},${(y + r * Math.sin(a)).toFixed(1)}`;
+  }).join(" ");
+  return s("polygon", { class: cls, points: pts, style: "fill:currentColor;stroke:#0b1016;stroke-width:1.5" });
+}
+
+// polyline moved sideways by d px (miter joins), so players walking together show as parallel lines
+function offsetRoute(points, d) {
+  if (!d) return points;
+  const normal = (a, b) => {
+    const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+    return [-dy / len, dx / len];
+  };
+  return points.map((p, i) => {
+    const n1 = i > 0 ? normal(points[i - 1], p) : null;
+    const n2 = i < points.length - 1 ? normal(p, points[i + 1]) : null;
+    let [nx, ny] = n1 && n2 ? [n1[0] + n2[0], n1[1] + n2[1]] : n1 || n2;
+    const len = Math.hypot(nx, ny) || 1;
+    [nx, ny] = [nx / len, ny / len];
+    const cos = n1 && n2 ? Math.max(0.5, nx * n1[0] + ny * n1[1]) : 1;
+    return [p[0] + (nx * d) / cos, p[1] + (ny * d) / cos];
+  });
+}
+
+function tacticBoard(radar, strat, file) {
+  const filterId = "radar-style";
+  const who = (role) => {
+    const p = Core.resolveRole(app.team, role).players[0];
+    return p ? { name: p.name || p.id, color: playerColor(p) } : { name: role, color: "#8a9099" };
+  };
+  const roles = [...strat.assignments.map((a) => a.role), ...Object.keys(strat.board.players)]
+    .filter((r, i, all) => typeof r === "string" && all.indexOf(r) === i);
+  const halo = "paint-order:stroke;stroke:#0b1016;stroke-width:4px;stroke-linejoin:round";
+
+  const root = s("svg", { class: "board-svg", viewBox: `0 0 ${Core.RADAR_SIZE} ${Core.RADAR_SIZE}`, role: "img", "aria-label": `Tablica: ${strat.title || ""}` },
+    s("defs", null, radarFilter(filterId), roles.map((r) => s("marker", {
+      id: `arrow-${r}`, viewBox: "0 0 10 10", refX: 6, refY: 5, markerWidth: 4, markerHeight: 4, orient: "auto-start-reverse",
+    }, s("path", { d: "M0,0 L10,5 L0,10 z", fill: who(r).color })))),
+    s("rect", { width: Core.RADAR_SIZE, height: Core.RADAR_SIZE, fill: "#0b1016" }),
+    s("image", { href: radar.image, width: Core.RADAR_SIZE, height: Core.RADAR_SIZE, filter: `url(#${filterId})` }));
+
+  for (const l of radar.labels) {
+    const [x, y] = l.at;
+    if (l.kind === "site") {
+      root.append(s("rect", { x: x - 30, y: y - 30, width: 60, height: 60, rx: 6, fill: BOARD_LINE, "fill-opacity": 0.22 }),
+        s("text", { x, y: y + 15, "text-anchor": "middle", "font-size": 42, "font-weight": 700, fill: "#e8f6f8" }, l.text));
+    } else {
+      const big = l.kind === "spawn";
+      root.append(s("text", { x, y, "text-anchor": "middle", "font-size": big ? 22 : 15, "font-weight": big ? 700 : 600,
+        fill: big ? "#e8f6f8" : "#8fb3bd", style: halo }, l.text));
+    }
+  }
+
+  const routes = s("g", { class: "routes" });
+  const walking = roles.filter((r) => strat.board.players[r]);
+  walking.forEach((r, i) => {
+    const route = offsetRoute(strat.board.players[r], (i - (walking.length - 1) / 2) * 7);
+    routes.append(s("polyline", { points: route.map((p) => p.map((n) => n.toFixed(1)).join(",")).join(" "), fill: "none",
+      stroke: who(r).color, "stroke-width": 5, "stroke-linejoin": "round", "stroke-linecap": "round", "marker-end": `url(#arrow-${r})` }));
+  });
+  // tokens at route ends; players ending in the same spot are spread sideways
+  const ends = new Map();
+  for (const r of roles) {
+    const route = strat.board.players[r];
+    if (!route) continue;
+    const [x, y] = route[route.length - 1];
+    const key = `${Math.round(x / 40)}:${Math.round(y / 40)}`;
+    if (!ends.has(key)) ends.set(key, []);
+    ends.get(key).push({ r, x, y });
+  }
+  for (const group of ends.values()) {
+    group.forEach(({ r, x, y }, k) => {
+      const tx = x + (k - (group.length - 1) / 2) * 34, ty = y - 30;
+      const { name, color } = who(r);
+      routes.append(s("circle", { cx: tx, cy: ty, r: 16, fill: color, stroke: "#0b1016", "stroke-width": 2 }),
+        s("text", { x: tx, y: ty + 5, "text-anchor": "middle", "font-size": 14, "font-weight": 700, fill: "#0b1016" }, name.slice(0, 2)));
+    });
+  }
+
+  const grenades = s("g", { class: "grenades" });
+  const marks = [];
+  for (const g of strat.board.grenades) {
+    const { name, color } = who(g.role);
+    const item = s("g", { class: "grenade", "data-step": g.step ?? "" },
+      s("line", { class: `ut-${g.type}`, x1: g.from[0], y1: g.from[1], x2: g.to[0], y2: g.to[1],
+        style: "stroke:currentColor;stroke-width:2.5;stroke-dasharray:8 6;opacity:.9" }),
+      s("circle", { cx: g.from[0], cy: g.from[1], r: 5, fill: color, stroke: "#0b1016", "stroke-width": 1.5 }),
+      grenadeMark(g.type, g.to),
+      s("text", { x: g.to[0], y: g.to[1] + (g.type === "smoke" ? 44 : 38), "text-anchor": "middle", "font-size": 15, "font-weight": 700,
+        fill: color, style: halo }, name));
+    grenades.append(item);
+    marks.push(item);
+  }
+  root.append(routes, grenades);
+
+  const coords = h("p", { class: "muted coords" }, "Kliknij mapę, żeby odczytać punkt [x, y] do ", h("code", null, file), ".");
+  root.addEventListener("click", (e) => {
+    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(root.getScreenCTM().inverse());
+    coords.textContent = `Punkt: [${Math.round(pt.x)}, ${Math.round(pt.y)}]`;
+  });
+
+  const board = {
+    el: h("div", { class: "board" }, root, coords),
+    focused: null,
+    focus(step) {
+      board.focused = step;
+      root.classList.toggle("focused", step != null);
+      for (const m of marks) m.classList.toggle("on", step != null && Number(m.dataset.step) === step);
+      return step;
+    },
+  };
+  return board;
+}
+
+// ── insta smoke tab ──
+VIEWS.insta = (main, { map, state }) => {
+  const file = `data/${state.map}.json`;
+  const mapName = (app.maps.find((m) => m.id === state.map) || {}).name || state.map;
+  const me = app.team.players.find((p) => p.id === currentMe());
+  const playerName = (id) => (app.team.players.find((p) => p.id === id) || {}).name || id;
+  main.append(h("div", { class: "titlebar" }, h("h1", null, `Insta smoke — ${mapName}`)),
+    h("p", { class: "muted" }, "Smoke'i rzucane od razu ze spawnu. Numer lineupu = Twoja pozycja na spawnie (screen spawnów)."));
+  let shown = 0;
+  for (const side of Core.SPAWN_SIDES) {
+    const list = Core.instaLineups(map.lineups, side);
+    const spawnShot = map.spawns[side];
+    if (!list.length && !spawnShot) continue;
+    shown++;
+    main.append(h("h2", null, `Strona ${side}`), h("div", { class: "split" },
+      spawnShot ? shot(spawnShot, `Spawny ${side} — ${mapName}`, file) : h("div", { class: "empty" }, `Brak screena spawnów ${side}.`, h("br"),
+        h("span", { class: "muted" }, `Dodaj "spawns": { "${side}": "…" } w ${file}.`)),
+      h("div", null, list.length
+        ? h("ol", { class: "spawnlist" }, list.map((l) => h("li", null, h("b", null, `#${l.spawn}`), ` ${l.name} → ${l.target}`,
+          h("span", { class: "muted" }, ` · ${playerName(l.player)}`))))
+        : h("p", { class: "muted" }, `Brak insta smoke'ów po stronie ${side}.`))));
+    for (const l of list) main.append(lineupRow(l, state.map, file, me ? me.aspect : null, playerName(l.player)));
+  }
+  if (!shown) {
+    main.append(h("div", { class: "empty" }, "Brak insta smoke'ów i screenów spawnów dla tej mapy.", h("br"),
+      h("span", { class: "muted" }, `Dodaj lineup z polem "spawn" albo "spawns" w ${file}.`)));
+  }
+};
+
 // ── lineups tab ──
-function lineupRow(l, mapId, file, myAspect) {
+function lineupRow(l, mapId, file, myAspect, playerName = null) {
   const aspect = Core.formatAspect(l.aspect);
   const known = Object.hasOwn(TYPE_LABELS, l.type);
   const kv = (k, v) => (v ? [h("dt", null, k), h("dd", null, v)] : null);
@@ -939,7 +1230,8 @@ function lineupRow(l, mapId, file, myAspect) {
       Core.aspectMismatch(l.aspect, myAspect)
         ? h("p", { class: "warn" }, `⚠ Lineup pod ${aspect} — Ty grasz na ${Core.formatAspect(myAspect)}, może nie wejść.`)
         : null,
-      h("dl", { class: "kv" }, kv("Cel", l.target), kv("Rejon", l.site), kv("Strona", l.side), kv("Skąd", l.from), kv("Rzut", l.throw)),
+      h("dl", { class: "kv" }, kv("Gracz", playerName), kv("Cel", l.target), kv("Rejon", l.site), kv("Strona", l.side),
+        kv("Spawn", l.spawn != null ? `#${l.spawn}` : null), kv("Skąd", l.from), kv("Rzut", l.throw)),
       l.instructions ? [h("h2", null, "Instrukcja"), h("p", { class: "pre" }, l.instructions)] : null,
       l.notes ? [h("h2", null, "Notatki zespołu"), h("p", { class: "pre" }, l.notes)] : null,
       notesWidget(mapId, `lineup:${l.id}`)));

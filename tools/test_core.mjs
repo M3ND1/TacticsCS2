@@ -134,32 +134,120 @@ test("checkMap flags references and formats", () => {
 
 test("parseHash defaults and validates every part", () => {
   const ctx = { mapIds: ["mirage", "dust2"], playerIds: ["p1", "s1"] };
-  assert.deepEqual(Core.parseHash("", ctx), { map: "mirage", tab: "pistolowka", variant: "A", player: null });
-  assert.deepEqual(Core.parseHash("#nuke/whatever", ctx), { map: "mirage", tab: "pistolowka", variant: "A", player: null });
-  assert.deepEqual(Core.parseHash("#dust2/execute/b", ctx), { map: "dust2", tab: "execute", variant: "B", player: null });
-  assert.deepEqual(Core.parseHash("#dust2/execute/x", ctx).variant, "A");
+  assert.deepEqual(Core.parseHash("", ctx), { map: "mirage", tab: "pistolowka", player: null });
+  assert.deepEqual(Core.parseHash("#nuke/whatever", ctx), { map: "mirage", tab: "pistolowka", player: null });
+  assert.deepEqual(Core.parseHash("#dust2/execute-b", ctx), { map: "dust2", tab: "execute-b", player: null });
+  assert.deepEqual(Core.parseHash("#dust2/insta", ctx).tab, "insta");
   assert.deepEqual(Core.parseHash("#mirage/lineupy/s1", ctx).player, "s1");
   assert.deepEqual(Core.parseHash("#mirage/lineupy/ghost", ctx).player, null);
   assert.deepEqual(Core.parseHash("#mirage/%E0%A4%A", ctx).tab, "pistolowka");
 });
 
+test("parseHash keeps old #<map>/execute/<A|B> links working", () => {
+  const ctx = { mapIds: ["mirage", "dust2"], playerIds: [] };
+  assert.equal(Core.parseHash("#dust2/execute/b", ctx).tab, "execute-b");
+  assert.equal(Core.parseHash("#dust2/execute/A", ctx).tab, "execute-a");
+  assert.equal(Core.parseHash("#dust2/execute", ctx).tab, "execute-a");
+});
+
 test("buildHash round-trips through parseHash", () => {
   const ctx = { mapIds: ["mirage"], playerIds: ["p1"] };
-  assert.equal(Core.buildHash({ map: "mirage", tab: "execute", variant: "B", player: null }), "#mirage/execute/B");
-  assert.equal(Core.buildHash({ map: "mirage", tab: "lineupy", variant: "A", player: "p1" }), "#mirage/lineupy/p1");
-  assert.equal(Core.buildHash({ map: "mirage", tab: "lineupy", variant: "A", player: null }), "#mirage/lineupy");
-  assert.equal(Core.buildHash({ map: "mirage", tab: "backup", variant: "B", player: "p1" }), "#mirage/backup");
-  for (const h of ["#mirage/execute/B", "#mirage/lineupy/p1", "#mirage/notatki"]) {
+  assert.equal(Core.buildHash({ map: "mirage", tab: "execute-b", player: null }), "#mirage/execute-b");
+  assert.equal(Core.buildHash({ map: "mirage", tab: "lineupy", player: "p1" }), "#mirage/lineupy/p1");
+  assert.equal(Core.buildHash({ map: "mirage", tab: "lineupy", player: null }), "#mirage/lineupy");
+  assert.equal(Core.buildHash({ map: "mirage", tab: "backup", player: "p1" }), "#mirage/backup");
+  for (const h of ["#mirage/execute-a", "#mirage/execute-b", "#mirage/insta", "#mirage/lineupy/p1", "#mirage/notatki"]) {
     assert.equal(Core.buildHash(Core.parseHash(h, ctx)), h);
   }
 });
 
-test("noteKey and noteContext", () => {
+test("noteKey and noteContext (execute tabs keep their old note keys)", () => {
   assert.equal(Core.noteKey("p1", "mirage", "execute-B"), "cs2pb:v1:notes:p1:mirage:execute-B");
-  assert.equal(Core.noteContext("pistolowka", "A"), "pistol");
-  assert.equal(Core.noteContext("execute", "B"), "execute-B");
-  assert.equal(Core.noteContext("backup", "A"), "backup");
-  assert.equal(Core.noteContext("notatki", "A"), "map");
+  assert.equal(Core.noteContext("pistolowka"), "pistol");
+  assert.equal(Core.noteContext("execute-a"), "execute-A");
+  assert.equal(Core.noteContext("execute-b"), "execute-B");
+  assert.equal(Core.noteContext("backup"), "backup");
+  assert.equal(Core.noteContext("insta"), "insta");
+  assert.equal(Core.noteContext("notatki"), "map");
+});
+
+test("checkMap validates board, radar, spawns and lineup spawn", () => {
+  const lineup = { id: "l1", player: "p1", name: "N", target: "T", side: "T", type: "smoke", aspect: "16:9", image: "a.png" };
+  const good = {
+    title: "X", steps: ["s1", "s2"],
+    board: { players: { entry: [[10, 10], [500, 500]] }, grenades: [{ role: "awp", type: "flash", from: [1, 2], to: [3, 4], step: 2 }] },
+  };
+  const ok = Core.checkMap({
+    id: "mirage", radar: { image: "assets/maps/mirage.png", labels: [{ text: "A", at: [1, 2], kind: "site" }] },
+    spawns: { T: "t.jpg", CT: "ct.jpg" },
+    strategies: { pistol: good, execute: { A: null, B: null }, backup: null },
+    lineups: [{ ...lineup, spawn: 3 }],
+  }, "mirage", TEAM);
+  assert.deepEqual(ok, []);
+
+  const bad = {
+    title: "X", steps: ["s1"],
+    board: {
+      players: { ghost: [[1, 1], [2, 2]], entry: [[1, 1]] },
+      grenades: [{ role: "entry", type: "he", from: [1, 2], to: [3, 4000], step: 2 }],
+    },
+  };
+  const msgs = Core.checkMap({
+    id: "mirage", radar: { image: "/abs.png", labels: [{ text: "A" }, { text: "B", at: [1, 1], kind: "big" }] },
+    spawns: { T: "http://x/t.jpg", X: "x.jpg" },
+    strategies: { pistol: bad, execute: { A: null, B: null }, backup: null },
+    lineups: [{ ...lineup, spawn: 11 }],
+  }, "mirage", TEAM).map((p) => p.message);
+  for (const expected of [
+    'strategia "pistol": board.players: nieznana rola "ghost"',
+    'strategia "pistol": board.players.entry musi być listą co najmniej 2 punktów [x, y] (0–1024)',
+    'strategia "pistol": board.grenades[0]: "type" musi być jednym z: smoke, flash, molotov',
+    'strategia "pistol": board.grenades[0]: "from" i "to" muszą być punktami [x, y] (0–1024)',
+    'strategia "pistol": board.grenades[0]: "step" musi być numerem kroku 1–1',
+    'ścieżka "radar.image" musi być względna (bez / na początku, bez .., bez http)',
+    'radar.labels[0] musi mieć "text" i punkt "at" [x, y]',
+    'radar.labels[1]: "kind" musi być jednym z: site, spawn, callout',
+    'ścieżka "spawns.T" musi być względna (bez / na początku, bez .., bez http)',
+    'nieznany klucz "X" w "spawns" (dozwolone: T, CT)',
+    'lineup "l1": "spawn" musi być liczbą całkowitą 1–10',
+  ]) assert.ok(msgs.includes(expected), `missing: ${expected}\n got: ${msgs.join("\n")}`);
+  assert.equal(msgs.length, 11, msgs.join("\n"));
+});
+
+test("normalizeMap keeps drawable board parts, radar and spawns", () => {
+  const m = Core.normalizeMap({
+    radar: { image: "r.png", labels: [{ text: "A", at: [1, 1] }, { text: "bad" }] },
+    spawns: { T: "t.jpg", CT: "/abs.jpg" },
+    strategies: { pistol: { title: "P", board: { players: { entry: [[1, 1], [2, 2]], awp: [[1, 1]] },
+      grenades: [{ type: "smoke", from: [1, 1], to: [2, 2] }, { type: "he", from: [1, 1], to: [2, 2] }] } } },
+  });
+  assert.deepEqual(m.radar, { image: "r.png", labels: [{ text: "A", at: [1, 1] }] });
+  assert.deepEqual(m.spawns, { T: "t.jpg" });
+  assert.deepEqual(Object.keys(m.strategies.pistol.board.players), ["entry"]);
+  assert.equal(m.strategies.pistol.board.grenades.length, 1);
+  assert.equal(Core.normalizeMap({}).radar, null);
+});
+
+test("instaLineups: one side, spawn order", () => {
+  const ls = [
+    { id: "a", name: "Okno", side: "T", spawn: 3 },
+    { id: "b", name: "Okno", side: "T", spawn: 1 },
+    { id: "c", name: "Mid", side: "CT", spawn: 2 },
+    { id: "d", name: "Zwykły", side: "T" },
+  ];
+  assert.deepEqual(Core.instaLineups(ls, "T").map((l) => l.id), ["b", "a"]);
+  assert.deepEqual(Core.instaLineups(ls, "CT").map((l) => l.id), ["c"]);
+});
+
+test("checkTeam validates player color", () => {
+  const msgs = Core.checkTeam({
+    roles: [],
+    players: [
+      { id: "a", name: "A", role: null, status: "active", color: "#4aa8e0" },
+      { id: "b", name: "B", role: null, status: "active", color: "blue" },
+    ],
+  }).map((p) => p.message);
+  assert.deepEqual(msgs, ['gracz "b": "color" musi być kolorem w formacie #RRGGBB']);
 });
 
 test("notes export/import round-trip", () => {

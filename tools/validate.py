@@ -8,6 +8,7 @@ Użycie (z katalogu repozytorium):
 Kod wyjścia 0 = brak problemów, 1 = wypisano problemy.
 """
 import json
+import math
 import os
 import re
 import subprocess
@@ -24,6 +25,9 @@ TYPES = ("smoke", "flash", "molotov")
 SITES = ("A", "B", "Mid")
 STRATEGY_SLOTS = ("pistol", "execute", "backup")
 VARIANTS = ("A", "B")
+SPAWN_SIDES = ("T", "CT")
+LABEL_KINDS = ("site", "spawn", "callout")
+RADAR_SIZE = 1024  # board coordinates are radar image pixels, 0..1024
 RELATIVE_HINT = "musi być względna (bez / na początku, bez .., bez http)"
 
 
@@ -41,6 +45,18 @@ def is_relative_path(p):
         and not p.startswith("/")
         and not SCHEME_RE.match(p)
         and ".." not in p.split("/")
+    )
+
+
+def is_int(x):
+    return isinstance(x, int) and not isinstance(x, bool)
+
+
+def is_point(x):
+    return (
+        isinstance(x, list)
+        and len(x) == 2
+        and all(isinstance(n, (int, float)) and not isinstance(n, bool) and math.isfinite(n) and 0 <= n <= RADAR_SIZE for n in x)
     )
 
 
@@ -139,6 +155,8 @@ def check_team(team):
             p(f'gracz "{pid}": "status" musi być "active" albo "sub"')
         if pl.get("aspect") is not None and pl["aspect"] not in ASPECTS:
             p(f'gracz "{pid}": "aspect" musi być jednym z: {", ".join(ASPECTS)} albo null')
+        if pl.get("color") is not None and not (isinstance(pl["color"], str) and HEX_RE.match(pl["color"])):
+            p(f'gracz "{pid}": "color" musi być kolorem w formacie #RRGGBB')
         role = pl.get("role")
         if role is None:
             continue
@@ -169,6 +187,8 @@ def check_strategy(st, label, role_ids, p):
     steps = st.get("steps")
     if steps is not None and not (isinstance(steps, list) and all(isinstance(s, str) for s in steps)):
         p(f'strategia "{label}": "steps" musi być listą tekstów')
+    if st.get("board") is not None:
+        check_board(st["board"], label, role_ids, len(steps) if isinstance(steps, list) else 0, p)
     assignments = st.get("assignments")
     if assignments is None:
         return
@@ -179,6 +199,68 @@ def check_strategy(st, label, role_ids, p):
         role = a.get("role") if is_obj(a) else None
         if role_ids is not None and (not isinstance(role, str) or role not in role_ids):
             p(f'strategia "{label}": nieznana rola "{role if role is not None else ""}" w assignments[{i}]')
+
+
+def check_board(b, label, role_ids, step_count, p):
+    at = f'strategia "{label}": board'
+    if not is_obj(b):
+        p(f"{at} musi być obiektem")
+        return
+    players = b.get("players")
+    if players is not None and not is_obj(players):
+        p(f"{at}.players musi być obiektem {{rola: [[x, y], ...]}}")
+    for role, route in (players.items() if is_obj(players) else []):
+        if role_ids is not None and role not in role_ids:
+            p(f'{at}.players: nieznana rola "{role}"')
+        if not (isinstance(route, list) and len(route) >= 2 and all(is_point(pt) for pt in route)):
+            p(f"{at}.players.{role} musi być listą co najmniej 2 punktów [x, y] (0–{RADAR_SIZE})")
+    grenades = b.get("grenades")
+    if grenades is not None and not isinstance(grenades, list):
+        p(f"{at}.grenades musi być listą")
+    for i, g in enumerate(grenades if isinstance(grenades, list) else []):
+        gat = f"{at}.grenades[{i}]"
+        if not is_obj(g):
+            p(f"{gat} musi być obiektem")
+            continue
+        role = g.get("role")
+        if role_ids is not None and not (isinstance(role, str) and role in role_ids):
+            p(f'{gat}: nieznana rola "{role if role is not None else ""}"')
+        if g.get("type") not in TYPES:
+            p(f'{gat}: "type" musi być jednym z: {", ".join(TYPES)}')
+        if not is_point(g.get("from")) or not is_point(g.get("to")):
+            p(f'{gat}: "from" i "to" muszą być punktami [x, y] (0–{RADAR_SIZE})')
+        step = g.get("step")
+        if step is not None and not (is_int(step) and 1 <= step <= step_count):
+            p(f'{gat}: "step" musi być numerem kroku 1–{step_count}')
+
+
+def check_radar(r, p):
+    if not is_obj(r):
+        p('"radar" musi być obiektem z "image" i "labels"')
+        return
+    if not is_relative_path(r.get("image")):
+        p(f'ścieżka "radar.image" {RELATIVE_HINT}')
+    labels = r.get("labels")
+    if labels is not None and not isinstance(labels, list):
+        p('"radar.labels" musi być listą')
+        return
+    for i, l in enumerate(labels or []):
+        if not is_obj(l) or not is_text(l.get("text")) or not is_point(l.get("at")):
+            p(f'radar.labels[{i}] musi mieć "text" i punkt "at" [x, y]')
+            continue
+        if l.get("kind") is not None and l["kind"] not in LABEL_KINDS:
+            p(f'radar.labels[{i}]: "kind" musi być jednym z: {", ".join(LABEL_KINDS)}')
+
+
+def check_spawns(sp, p):
+    if not is_obj(sp):
+        p('"spawns" musi być obiektem {"T": ścieżka, "CT": ścieżka}')
+        return
+    for side, path in sp.items():
+        if side not in SPAWN_SIDES:
+            p(f'nieznany klucz "{side}" w "spawns" (dozwolone: {", ".join(SPAWN_SIDES)})')
+        elif not is_relative_path(path):
+            p(f'ścieżka "spawns.{side}" {RELATIVE_HINT}')
 
 
 def check_map(data, map_id, team):
@@ -218,6 +300,11 @@ def check_map(data, map_id, team):
             for variant in VARIANTS:
                 check_strategy(ex.get(variant), f"execute.{variant}", role_ids, p)
 
+    if data.get("radar") is not None:
+        check_radar(data["radar"], p)
+    if data.get("spawns") is not None:
+        check_spawns(data["spawns"], p)
+
     lineups = data.get("lineups")
     if lineups is not None and not isinstance(lineups, list):
         p('"lineups" musi być listą')
@@ -245,6 +332,8 @@ def check_map(data, map_id, team):
             p(f'lineup "{name}": "type" musi być jednym z: {", ".join(TYPES)}')
         if l.get("site") is not None and l["site"] not in SITES:
             p(f'lineup "{name}": "site" musi być jednym z: {", ".join(SITES)}')
+        if l.get("spawn") is not None and not (is_int(l["spawn"]) and 1 <= l["spawn"] <= 10):
+            p(f'lineup "{name}": "spawn" musi być liczbą całkowitą 1–10')
         if is_text(l.get("aspect")) and l["aspect"] not in ASPECTS:
             p(f'lineup "{name}": "aspect" musi być jednym z: {", ".join(ASPECTS)}')
         if "resolution" in l:
@@ -265,6 +354,10 @@ def image_refs(data):
         refs += [st["image"] for st in candidates if is_obj(st) and st.get("image") is not None]
     if isinstance(data.get("lineups"), list):
         refs += [l["image"] for l in data["lineups"] if is_obj(l) and l.get("image") is not None]
+    if is_obj(data.get("radar")):
+        refs.append(data["radar"].get("image"))
+    if is_obj(data.get("spawns")):
+        refs += [data["spawns"][side] for side in SPAWN_SIDES if side in data["spawns"]]
     return [r for r in refs if is_relative_path(r)]
 
 
