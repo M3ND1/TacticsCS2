@@ -88,8 +88,11 @@ th { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: upp
 ol.steps li.step-btn { cursor: pointer; padding: 2px 6px; margin-left: -6px; border-radius: 3px; }
 ol.steps li.step-btn:hover { background: var(--panel); }
 ol.steps li.step-btn.on { background: var(--accent-bg); color: var(--text); outline: 1px solid var(--accent); }
-ol.spawnlist { margin: 0; padding-left: 0; list-style: none; }
-ol.spawnlist li { padding: 3px 0; border-bottom: 1px solid var(--border); }
+.insta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; align-content: start; }
+.insta-card { position: relative; }
+.insta-card .shot { width: 100%; max-height: none; aspect-ratio: 16 / 9; object-fit: cover; }
+.insta-card .num { position: absolute; top: 6px; left: 6px; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: var(--accent); color: #0b1016; font-size: 17px; font-weight: 700; pointer-events: none; }
+.insta-card .cap { position: absolute; right: 6px; bottom: 6px; padding: 1px 6px; border-radius: 3px; background: rgba(0, 0, 0, .65); font-size: 12px; pointer-events: none; }
 .fatal { max-width: 720px; margin: 48px auto; padding: 16px; border: 1px solid var(--err); }
 .fatal h1 { color: var(--err); margin-bottom: 8px; }
 #problems { position: fixed; left: 0; right: 0; bottom: 0; background: #231c12; border-top: 1px solid var(--warn); color: var(--warn); font-size: 12px; max-height: 40vh; overflow: auto; }
@@ -1189,10 +1192,8 @@ function tacticBoard(radar, strat, file) {
 VIEWS.insta = (main, { map, state }) => {
   const file = `data/${state.map}.json`;
   const mapName = (app.maps.find((m) => m.id === state.map) || {}).name || state.map;
-  const me = app.team.players.find((p) => p.id === currentMe());
-  const playerName = (id) => (app.team.players.find((p) => p.id === id) || {}).name || id;
   main.append(h("div", { class: "titlebar" }, h("h1", null, `Insta smoke — ${mapName}`)),
-    h("p", { class: "muted" }, "Smoke'i rzucane od razu ze spawnu. Numer lineupu = Twoja pozycja na spawnie (screen spawnów)."));
+    h("p", { class: "muted" }, "Numer = Twoja pozycja na spawnie (screen po lewej). Kliknij miniaturę, żeby ją powiększyć; szczegóły i notatki są w zakładce Lineupy."));
   let shown = 0;
   for (const side of Core.SPAWN_SIDES) {
     const list = Core.instaLineups(map.lineups, side);
@@ -1202,11 +1203,12 @@ VIEWS.insta = (main, { map, state }) => {
     main.append(h("h2", null, `Strona ${side}`), h("div", { class: "split" },
       spawnShot ? shot(spawnShot, `Spawny ${side} — ${mapName}`, file) : h("div", { class: "empty" }, `Brak screena spawnów ${side}.`, h("br"),
         h("span", { class: "muted" }, `Dodaj "spawns": { "${side}": "…" } w ${file}.`)),
-      h("div", null, list.length
-        ? h("ol", { class: "spawnlist" }, list.map((l) => h("li", null, h("b", null, `#${l.spawn}`), ` ${l.name} → ${l.target}`,
-          h("span", { class: "muted" }, ` · ${playerName(l.player)}`))))
-        : h("p", { class: "muted" }, `Brak insta smoke'ów po stronie ${side}.`))));
-    for (const l of list) main.append(lineupRow(l, state.map, file, me ? me.aspect : null, playerName(l.player)));
+      list.length
+        ? h("div", { class: "insta-grid" }, list.map((l) => h("div", { class: "insta-card" },
+          shot(l.image, `#${l.spawn} — ${l.name}`, file),
+          h("span", { class: "num" }, l.spawn),
+          h("span", { class: "cap" }, l.target))))
+        : h("p", { class: "muted" }, `Brak insta smoke'ów po stronie ${side}.`)));
   }
   if (!shown) {
     main.append(h("div", { class: "empty" }, "Brak insta smoke'ów i screenów spawnów dla tej mapy.", h("br"),
@@ -1215,7 +1217,7 @@ VIEWS.insta = (main, { map, state }) => {
 };
 
 // ── lineups tab ──
-function lineupRow(l, mapId, file, myAspect, playerName = null) {
+function lineupRow(l, mapId, file, myAspect) {
   const aspect = Core.formatAspect(l.aspect);
   const known = Object.hasOwn(TYPE_LABELS, l.type);
   const kv = (k, v) => (v ? [h("dt", null, k), h("dd", null, v)] : null);
@@ -1230,7 +1232,7 @@ function lineupRow(l, mapId, file, myAspect, playerName = null) {
       Core.aspectMismatch(l.aspect, myAspect)
         ? h("p", { class: "warn" }, `⚠ Lineup pod ${aspect} — Ty grasz na ${Core.formatAspect(myAspect)}, może nie wejść.`)
         : null,
-      h("dl", { class: "kv" }, kv("Gracz", playerName), kv("Cel", l.target), kv("Rejon", l.site), kv("Strona", l.side),
+      h("dl", { class: "kv" }, kv("Cel", l.target), kv("Rejon", l.site), kv("Strona", l.side),
         kv("Spawn", l.spawn != null ? `#${l.spawn}` : null), kv("Skąd", l.from), kv("Rzut", l.throw)),
       l.instructions ? [h("h2", null, "Instrukcja"), h("p", { class: "pre" }, l.instructions)] : null,
       l.notes ? [h("h2", null, "Notatki zespołu"), h("p", { class: "pre" }, l.notes)] : null,
