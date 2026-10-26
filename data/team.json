@@ -25,35 +25,35 @@
     {
       "id": "mendi",
       "name": "Mendi",
-      "role": "entry",
+      "role": "awp",
       "status": "active",
       "aspect": null
     },
     {
       "id": "teey",
       "name": "Teey",
-      "role": "second",
+      "role": "support",
       "status": "active",
       "aspect": null
     },
     {
       "id": "mrpatyk",
       "name": "MrPatyk",
-      "role": "support",
+      "role": "entry",
       "status": "active",
       "aspect": null
     },
     {
       "id": "rond",
       "name": "Rond",
-      "role": "lurk",
+      "role": "second",
       "status": "active",
       "aspect": null
     },
     {
       "id": "ciomka",
       "name": "Ciomka",
-      "role": "awp",
+      "role": "lurk",
       "status": "active",
       "aspect": null
     },

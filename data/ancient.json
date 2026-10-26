@@ -4,12 +4,12 @@
   "strategies": {
     "pistol": {
       "title": "Szybkie B",
-      "summary": "Pistolówka: szybkie B z dwoma smoke'ami (long i short) i flashami entry. Rond trzyma cave od strony mid, Ciomka rzuca insta red na starcie.\nKupno: smoke + flash, entry 2× flash.",
+      "summary": "Pistolówka: szybkie B z dwoma smoke'ami (long i short) i flashami entry. Ciomka trzyma cave od strony mid, Mendi rzuca insta red na starcie.\nKupno: smoke + flash, entry 2× flash.",
       "steps": [
-        "Start rundy: Ciomka insta red z T spawnu (lineup 1, 4 albo 5 wg pozycji; z innej pozycji Mid red). Rond idzie mid w stronę cave.",
-        "Teey smoke B long z Ruin, MrPatyk smoke B short sprzed bramy — razem, na komendę.",
-        "MrPatyk flash B entry z Ruin → Mendi wchodzi pierwszy, Teey trade.",
-        "Plant na B. Rond pilnuje cave, Ciomka dochodzi jako ostatni i trzyma flankę."
+        "Start rundy: Mendi insta red z T spawnu (lineup 1, 4 albo 5 wg pozycji; z innej pozycji Mid red). Ciomka idzie mid w stronę cave.",
+        "Rond smoke B long z Ruin, Teey smoke B short sprzed bramy — razem, na komendę.",
+        "Teey flash B entry z Ruin → MrPatyk wchodzi pierwszy, Rond trade.",
+        "Plant na B. Ciomka pilnuje cave, Mendi dochodzi jako ostatni i trzyma flankę."
       ],
       "assignments": [
         {
@@ -58,13 +58,13 @@
     "execute": {
       "A": {
         "title": "Execute A przez A main",
-        "summary": "Execute A: trzech przez A main, Rond na Dworze odcina donut, Ciomka trzyma mid po insta red. Smoke'i CT, temple i donut lecą razem.",
+        "summary": "Execute A: trzech przez A main, Ciomka na Dworze odcina donut, Mendi trzyma mid po insta red. Smoke'i CT, temple i donut lecą razem.",
         "steps": [
-          "Start rundy: Ciomka insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red) i trzyma mid.",
-          "Na komendę razem: Teey smoke A temple sprzed A, MrPatyk smoke A na CT z Dworu, Rond smoke A donut z Dworu.",
-          "MrPatyk flash nad A main → Mendi wchodzi pierwszy, Teey trade, MrPatyk trzeci.",
-          "Rond trzyma krawędź smoke'a na donucie przed rotacją z mid.",
-          "Plant na A. Ciomka pilnuje mid i łapie rotację, Rond dochodzi przez donut, gdy smoke zejdzie."
+          "Start rundy: Mendi insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red) i trzyma mid.",
+          "Na komendę razem: Rond smoke A temple sprzed A, Teey smoke A na CT z Dworu, Ciomka smoke A donut z Dworu.",
+          "Teey flash nad A main → MrPatyk wchodzi pierwszy, Rond trade, Teey trzeci.",
+          "Ciomka trzyma krawędź smoke'a na donucie przed rotacją z mid.",
+          "Plant na A. Mendi pilnuje mid i łapie rotację, Ciomka dochodzi przez donut, gdy smoke zejdzie."
         ],
         "assignments": [
           {
@@ -112,13 +112,13 @@
       },
       "B": {
         "title": "Execute B z molotovami",
-        "summary": "Pełny execute B: smoke'i long i short, molotovy BS i ninja, flashe entry i oneway. Rond smoke'uje donut od strony mid, żeby spowolnić rotację z A.",
+        "summary": "Pełny execute B: smoke'i long i short, molotovy BS i ninja, flashe entry i oneway. Ciomka smoke'uje donut od strony mid, żeby spowolnić rotację z A.",
         "steps": [
-          "Start rundy: Ciomka insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red). Rond idzie na Dwór.",
-          "Na komendę razem: Teey smoke B long z Ruin, MrPatyk smoke B short sprzed bramy, Rond smoke Mid donut z Dworu.",
-          "Molotovy z dolnej strony T: MrPatyk molo B ninja, Ciomka molo B BS.",
-          "Mendi flash B oneway, Teey flash B entry z Ruin → Mendi wchodzi pierwszy, Teey trade.",
-          "Plant na B. Ciomka ostatni, trzyma cave i flankę, Rond pilnuje mid."
+          "Start rundy: Mendi insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red). Ciomka idzie na Dwór.",
+          "Na komendę razem: Rond smoke B long z Ruin, Teey smoke B short sprzed bramy, Ciomka smoke Mid donut z Dworu.",
+          "Molotovy z dolnej strony T: Teey molo B ninja, Mendi molo B BS.",
+          "MrPatyk flash B oneway, Rond flash B entry z Ruin → MrPatyk wchodzi pierwszy, Rond trade.",
+          "Plant na B. Mendi ostatni, trzyma cave i flankę, Ciomka pilnuje mid."
         ],
         "assignments": [
           {

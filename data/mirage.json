@@ -4,12 +4,12 @@
   "strategies": {
     "pistol": {
       "title": "Szybkie B przez Mieszkania",
-      "summary": "Pistolówka: cała piątka na B przez Mieszkania. Trzy smoke'i z Tylnej alejki odcinają kuchnię, short i exit, Ciomka na starcie rzuca insta okno i trzyma mid przed rotacją.\nKupno: smoke + flash, entry 2× flash.",
+      "summary": "Pistolówka: cała piątka na B przez Mieszkania. Trzy smoke'i z Tylnej alejki odcinają kuchnię, short i exit, Mendi na starcie rzuca insta okno i trzyma mid przed rotacją.\nKupno: smoke + flash, entry 2× flash.",
       "steps": [
-        "Start rundy: Ciomka rzuca insta okno z T spawnu (lineup z numerem Twojej pozycji na spawnie). Reszta biegnie Tylną alejką.",
-        "Tylna alejka: Teey smoke B kuchnia, MrPatyk smoke B short, Rond smoke B exit — rzuty razem, na komendę.",
-        "Mieszkania: MrPatyk flash B entry nad wyjściem, Mendi wchodzi pierwszy, Teey trade.",
-        "Plant na B. Rond pilnuje Mieszkań od tyłu, Ciomka dochodzi z mid przez Mieszkania."
+        "Start rundy: Mendi rzuca insta okno z T spawnu (lineup z numerem Twojej pozycji na spawnie). Reszta biegnie Tylną alejką.",
+        "Tylna alejka: Rond smoke B kuchnia, Teey smoke B short, Ciomka smoke B exit — rzuty razem, na komendę.",
+        "Mieszkania: Teey flash B entry nad wyjściem, MrPatyk wchodzi pierwszy, Rond trade.",
+        "Plant na B. Ciomka pilnuje Mieszkań od tyłu, Mendi dochodzi z mid przez Mieszkania."
       ],
       "assignments": [
         {
@@ -60,11 +60,11 @@
         "title": "Execute A: rampa + pałac",
         "summary": "Pełny execute A. Trzech z rampy (Uliczka pałacowa), jeden z pałacu, AWP trzyma mid po insta oknie. Smoke'i CT, jungle, schody i top con lecą razem, molotovy czyszczą kanapkę i pod drewnem.",
         "steps": [
-          "Start rundy: Ciomka insta okno z T spawnu. Rond idzie do pałacu, reszta na Uliczkę pałacową.",
-          "Na komendę razem: Teey smoke A na CT, MrPatyk smoke A jungle, Mendi smoke A top con, Rond smoke A schody v2 z pałacu (prawy + lewy jumpthrow).",
-          "Po 1–2 s molotovy: Teey molo A kanapka, Rond molo A pod drewnem.",
-          "MrPatyk flash A entry → Mendi wchodzi z rampy, Teey trade, Rond wychodzi z pałacu w tym samym momencie.",
-          "Plant default. Ciomka zostaje na mid i łapie rotację przez okno / short."
+          "Start rundy: Mendi insta okno z T spawnu. Ciomka idzie do pałacu, reszta na Uliczkę pałacową.",
+          "Na komendę razem: Rond smoke A na CT, Teey smoke A jungle, MrPatyk smoke A top con, Ciomka smoke A schody v2 z pałacu (prawy + lewy jumpthrow).",
+          "Po 1–2 s molotovy: Rond molo A kanapka, Ciomka molo A pod drewnem.",
+          "Teey flash A entry → MrPatyk wchodzi z rampy, Rond trade, Ciomka wychodzi z pałacu w tym samym momencie.",
+          "Plant default. Mendi zostaje na mid i łapie rotację przez okno / short."
         ],
         "assignments": [
           {
@@ -112,13 +112,13 @@
       },
       "B": {
         "title": "Execute B z Mieszkań",
-        "summary": "Execute B: czterech przez Tylną alejkę i Mieszkania, Rond lurkuje na górze środka i odcina rotację przez con. Smoke'i kuchnia, short i exit z Tylnej alejki, flash B entry z Mieszkań.",
+        "summary": "Execute B: czterech przez Tylną alejkę i Mieszkania, Ciomka lurkuje na górze środka i odcina rotację przez con. Smoke'i kuchnia, short i exit z Tylnej alejki, flash B entry z Mieszkań.",
         "steps": [
-          "Start rundy: Ciomka insta okno z T spawnu, potem dołącza do Tylnej alejki. Rond idzie na górę środka.",
-          "Tylna alejka, na komendę razem: Teey smoke B kuchnia, MrPatyk smoke B short, Mendi smoke B exit.",
-          "Rond flash Mid con z góry środka i robi hałas na mid, żeby zatrzymać rotację.",
-          "Teey flash B entry → Mendi wchodzi pierwszy z Mieszkań, Teey trade, MrPatyk trzeci.",
-          "Plant na B. Ciomka trzyma Mieszkania i flankę, Rond rotuje przez underpass / short."
+          "Start rundy: Mendi insta okno z T spawnu, potem dołącza do Tylnej alejki. Ciomka idzie na górę środka.",
+          "Tylna alejka, na komendę razem: Rond smoke B kuchnia, Teey smoke B short, MrPatyk smoke B exit.",
+          "Ciomka flash Mid con z góry środka i robi hałas na mid, żeby zatrzymać rotację.",
+          "Rond flash B entry → MrPatyk wchodzi pierwszy z Mieszkań, Rond trade, Teey trzeci.",
+          "Plant na B. Mendi trzyma Mieszkania i flankę, Ciomka rotuje przez underpass / short."
         ],
         "assignments": [
           {
