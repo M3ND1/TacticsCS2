@@ -1,6 +1,10 @@
 {
   "id": "dust2",
   "name": "Dust II",
+  "spawns": {
+    "T": "assets/spawns/dust2/T.jpg",
+    "CT": "assets/spawns/dust2/CT.jpg"
+  },
   "strategies": {
     "pistol": null,
     "execute": {

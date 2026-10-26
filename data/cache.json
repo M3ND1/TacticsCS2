@@ -1,0 +1,17 @@
+{
+  "id": "cache",
+  "name": "Cache",
+  "spawns": {
+    "T": "assets/spawns/cache/T.jpg",
+    "CT": "assets/spawns/cache/CT.jpg"
+  },
+  "strategies": {
+    "pistol": null,
+    "execute": {
+      "A": null,
+      "B": null
+    },
+    "backup": null
+  },
+  "lineups": []
+}

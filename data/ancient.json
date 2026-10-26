@@ -1,11 +1,85 @@
 {
   "id": "ancient",
   "name": "Ancient",
+  "radar": {
+    "image": "assets/maps/ancient.png",
+    "labels": [
+      {
+        "text": "A",
+        "at": [300, 262],
+        "kind": "site"
+      },
+      {
+        "text": "B",
+        "at": [745, 395],
+        "kind": "site"
+      },
+      {
+        "text": "T",
+        "at": [495, 885],
+        "kind": "spawn"
+      },
+      {
+        "text": "CT",
+        "at": [517, 150],
+        "kind": "spawn"
+      },
+      {
+        "text": "A main",
+        "at": [170, 470],
+        "kind": "callout"
+      },
+      {
+        "text": "Przed A",
+        "at": [160, 615],
+        "kind": "callout"
+      },
+      {
+        "text": "Dwór",
+        "at": [420, 630],
+        "kind": "callout"
+      },
+      {
+        "text": "Mid",
+        "at": [530, 440],
+        "kind": "callout"
+      },
+      {
+        "text": "Cave",
+        "at": [625, 590],
+        "kind": "callout"
+      },
+      {
+        "text": "Ruiny",
+        "at": [730, 780],
+        "kind": "callout"
+      },
+      {
+        "text": "Dolna strona T",
+        "at": [630, 835],
+        "kind": "callout"
+      },
+      {
+        "text": "Przed brama",
+        "at": [880, 665],
+        "kind": "callout"
+      },
+      {
+        "text": "Donut",
+        "at": [312, 420],
+        "kind": "callout"
+      },
+      {
+        "text": "Temple",
+        "at": [300, 135],
+        "kind": "callout"
+      }
+    ]
+  },
   "strategies": {
     "pistol": {
       "title": "Szybkie B",
       "summary": "Pistolówka: szybkie B z dwoma smoke'ami (long i short) i flashami entry. Ciomka trzyma cave od strony mid, Mendi rzuca insta red na starcie.\nKupno: smoke + flash, entry 2× flash.",
-      "image": "assets/tactics/ancient/pistol.png",
       "steps": [
         "Start rundy: Mendi insta red z T spawnu (lineup 1, 4 albo 5 wg pozycji; z innej pozycji Mid red). Ciomka idzie mid w stronę cave.",
         "Rond smoke B long z Ruin, Teey smoke B short sprzed bramy — razem, na komendę.",
@@ -54,13 +128,51 @@
           "notes": ""
         }
       ],
-      "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+      "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu.",
+      "board": {
+        "players": {
+          "entry": [[495, 885], [495, 800], [640, 798], [720, 745], [800, 660], [820, 570], [800, 480]],
+          "second": [[495, 885], [495, 800], [640, 798], [720, 745], [800, 660], [820, 570], [800, 480]],
+          "support": [[495, 885], [495, 800], [640, 798], [720, 745], [800, 660], [820, 570], [800, 480]],
+          "awp": [[495, 885], [495, 800], [640, 798], [720, 745], [800, 660], [820, 570], [800, 480]],
+          "lurk": [[495, 885], [495, 800], [420, 760], [330, 715], [355, 650], [385, 600], [470, 575], [560, 570], [620, 555]]
+        },
+        "grenades": [
+          {
+            "role": "awp",
+            "type": "smoke",
+            "from": [495, 875],
+            "to": [487, 330],
+            "step": 1
+          },
+          {
+            "role": "second",
+            "type": "smoke",
+            "from": [720, 745],
+            "to": [800, 355],
+            "step": 2
+          },
+          {
+            "role": "support",
+            "type": "smoke",
+            "from": [800, 660],
+            "to": [690, 488],
+            "step": 2
+          },
+          {
+            "role": "support",
+            "type": "flash",
+            "from": [720, 745],
+            "to": [800, 520],
+            "step": 3
+          }
+        ]
+      }
     },
     "execute": {
       "A": {
         "title": "Execute A przez A main",
         "summary": "Execute A: trzech przez A main, Ciomka na Dworze odcina donut, Mendi trzyma mid po insta red. Smoke'i CT, temple i donut lecą razem.",
-        "image": "assets/tactics/ancient/execute-a.png",
         "steps": [
           "Start rundy: Mendi insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red) i trzyma mid.",
           "Na komendę razem: Rond smoke A temple sprzed A, Teey smoke A na CT z Dworu, Ciomka smoke A donut z Dworu.",
@@ -110,12 +222,57 @@
             "notes": ""
           }
         ],
-        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu.",
+        "board": {
+          "players": {
+            "entry": [[495, 885], [495, 800], [420, 760], [330, 715], [250, 640], [215, 590], [230, 470], [240, 360], [290, 290]],
+            "second": [[495, 885], [495, 800], [420, 760], [330, 715], [250, 640], [215, 590], [230, 470], [240, 360], [290, 290]],
+            "support": [[495, 885], [495, 800], [420, 760], [330, 715], [355, 650], [385, 600], [300, 625], [215, 590], [230, 470], [240, 360], [290, 290]],
+            "lurk": [[495, 885], [495, 800], [420, 760], [330, 715], [355, 650], [385, 600]],
+            "awp": [[495, 885], [495, 800], [420, 760], [330, 715], [355, 650], [385, 600], [470, 575], [485, 470]]
+          },
+          "grenades": [
+            {
+              "role": "awp",
+              "type": "smoke",
+              "from": [495, 875],
+              "to": [487, 330],
+              "step": 1
+            },
+            {
+              "role": "second",
+              "type": "smoke",
+              "from": [215, 590],
+              "to": [312, 170],
+              "step": 2
+            },
+            {
+              "role": "support",
+              "type": "smoke",
+              "from": [385, 600],
+              "to": [410, 215],
+              "step": 2
+            },
+            {
+              "role": "lurk",
+              "type": "smoke",
+              "from": [385, 600],
+              "to": [312, 464],
+              "step": 2
+            },
+            {
+              "role": "support",
+              "type": "flash",
+              "from": [230, 470],
+              "to": [255, 360],
+              "step": 3
+            }
+          ]
+        }
       },
       "B": {
         "title": "Execute B z molotovami",
         "summary": "Pełny execute B: smoke'i long i short, molotovy BS i ninja, flashe entry i oneway. Ciomka smoke'uje donut od strony mid, żeby spowolnić rotację z A.",
-        "image": "assets/tactics/ancient/execute-b.png",
         "steps": [
           "Start rundy: Mendi insta red z T spawnu (1, 4 albo 5; z innej pozycji Mid red). Ciomka idzie na Dwór.",
           "Na komendę razem: Rond smoke B long z Ruin, Teey smoke B short sprzed bramy, Ciomka smoke Mid donut z Dworu.",
@@ -165,7 +322,74 @@
             "notes": ""
           }
         ],
-        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu.",
+        "board": {
+          "players": {
+            "entry": [[495, 885], [495, 800], [640, 798], [720, 745], [800, 660], [820, 570], [800, 480]],
+            "second": [[495, 885], [495, 800], [640, 798], [720, 745], [800, 660], [820, 570], [800, 480]],
+            "support": [[495, 885], [495, 800], [640, 798], [720, 745], [800, 660], [820, 570], [800, 480]],
+            "awp": [[495, 885], [495, 800], [640, 798], [720, 745], [800, 660], [820, 570], [800, 480]],
+            "lurk": [[495, 885], [495, 800], [420, 760], [330, 715], [355, 650], [385, 600], [470, 575], [485, 470]]
+          },
+          "grenades": [
+            {
+              "role": "awp",
+              "type": "smoke",
+              "from": [495, 875],
+              "to": [487, 330],
+              "step": 1
+            },
+            {
+              "role": "second",
+              "type": "smoke",
+              "from": [720, 745],
+              "to": [800, 355],
+              "step": 2
+            },
+            {
+              "role": "support",
+              "type": "smoke",
+              "from": [800, 660],
+              "to": [690, 488],
+              "step": 2
+            },
+            {
+              "role": "lurk",
+              "type": "smoke",
+              "from": [385, 600],
+              "to": [312, 464],
+              "step": 2
+            },
+            {
+              "role": "support",
+              "type": "molotov",
+              "from": [640, 798],
+              "to": [850, 385],
+              "step": 3
+            },
+            {
+              "role": "awp",
+              "type": "molotov",
+              "from": [640, 798],
+              "to": [690, 400],
+              "step": 3
+            },
+            {
+              "role": "entry",
+              "type": "flash",
+              "from": [640, 798],
+              "to": [830, 600],
+              "step": 4
+            },
+            {
+              "role": "second",
+              "type": "flash",
+              "from": [720, 745],
+              "to": [800, 520],
+              "step": 4
+            }
+          ]
+        }
       }
     },
     "backup": null
@@ -363,6 +587,7 @@
       "target": "Red",
       "side": "T",
       "site": "Mid",
+      "spawn": 1,
       "from": "T spawn (1)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-red-insta-t-spawn-1.jpg",
@@ -377,6 +602,7 @@
       "target": "Red",
       "side": "T",
       "site": "Mid",
+      "spawn": 4,
       "from": "T spawn (4)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-red-insta-t-spawn-4.jpg",
@@ -391,6 +617,7 @@
       "target": "Red",
       "side": "T",
       "site": "Mid",
+      "spawn": 5,
       "from": "T spawn (5)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-red-insta-t-spawn-5.jpg",
@@ -405,6 +632,7 @@
       "target": "Mid",
       "side": "CT",
       "site": "Mid",
+      "spawn": 1,
       "from": "CT spawn (1)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-1.jpg",
@@ -419,6 +647,7 @@
       "target": "Mid",
       "side": "CT",
       "site": "Mid",
+      "spawn": 2,
       "from": "CT spawn (2)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-2.jpg",
@@ -433,6 +662,7 @@
       "target": "Mid",
       "side": "CT",
       "site": "Mid",
+      "spawn": 3,
       "from": "CT spawn (3)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-3.jpg",
@@ -447,6 +677,7 @@
       "target": "Mid",
       "side": "CT",
       "site": "Mid",
+      "spawn": 4,
       "from": "CT spawn (4)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-4.jpg",
@@ -461,6 +692,7 @@
       "target": "Mid",
       "side": "CT",
       "site": "Mid",
+      "spawn": 5,
       "from": "CT spawn (5)",
       "aspect": "16:9",
       "image": "assets/lineups/ancient/teey/Mid-smoke-insta-ct-spawn-5.jpg",

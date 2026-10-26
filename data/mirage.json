@@ -1,66 +1,172 @@
 {
   "id": "mirage",
   "name": "Mirage",
+  "radar": {
+    "image": "assets/maps/mirage.png",
+    "labels": [
+      {
+        "text": "A",
+        "at": [556, 792],
+        "kind": "site"
+      },
+      {
+        "text": "B",
+        "at": [200, 335],
+        "kind": "site"
+      },
+      {
+        "text": "T",
+        "at": [900, 368],
+        "kind": "spawn"
+      },
+      {
+        "text": "CT",
+        "at": [327, 712],
+        "kind": "spawn"
+      },
+      {
+        "text": "Uliczka pałacowa",
+        "at": [930, 660],
+        "kind": "callout"
+      },
+      {
+        "text": "Wnętrze pałacu",
+        "at": [760, 840],
+        "kind": "callout"
+      },
+      {
+        "text": "Rampa",
+        "at": [710, 700],
+        "kind": "callout"
+      },
+      {
+        "text": "Tylna alejka",
+        "at": [800, 280],
+        "kind": "callout"
+      },
+      {
+        "text": "Mieszkania",
+        "at": [470, 160],
+        "kind": "callout"
+      },
+      {
+        "text": "Góra środka",
+        "at": [680, 420],
+        "kind": "callout"
+      },
+      {
+        "text": "Mid",
+        "at": [575, 505],
+        "kind": "callout"
+      },
+      {
+        "text": "Okno",
+        "at": [445, 405],
+        "kind": "callout"
+      }
+    ]
+  },
+  "spawns": {
+    "T": "assets/spawns/mirage/T.jpg",
+    "CT": "assets/spawns/mirage/CT.jpg"
+  },
   "strategies": {
     "pistol": {
-      "title": "Szybkie B przez Mieszkania",
-      "summary": "Pistolówka: cała piątka na B przez Mieszkania. Trzy smoke'i z Tylnej alejki odcinają kuchnię, short i exit, Mendi na starcie rzuca insta okno i trzyma mid przed rotacją.\nKupno: smoke + flash, entry 2× flash.",
-      "image": "assets/tactics/mirage/pistol.png",
+      "title": "Split A: rampa + pałac",
+      "summary": "Pistolówka: split A — trzech z rampy (Uliczka pałacowa), dwóch z pałacu. Trzy smoke'i (CT, jungle, schody) i flash A entry, wejście z dwóch stron naraz.\nKupno: smoke + flash, entry 2× flash.",
       "steps": [
-        "Start rundy: Mendi rzuca insta okno z T spawnu (lineup z numerem Twojej pozycji na spawnie). Reszta biegnie Tylną alejką.",
-        "Tylna alejka: Rond smoke B kuchnia, Teey smoke B short, Ciomka smoke B exit — rzuty razem, na komendę.",
-        "Mieszkania: Teey flash B entry nad wyjściem, MrPatyk wchodzi pierwszy, Rond trade.",
-        "Plant na B. Ciomka pilnuje Mieszkań od tyłu, Mendi dochodzi z mid przez Mieszkania."
+        "Start rundy: MrPatyk, Rond i Teey idą na Uliczkę pałacową (rampa), Ciomka i Mendi do Wnętrza pałacu.",
+        "Na komendę razem: Rond smoke A na CT i Teey smoke A jungle z Uliczki pałacowej, Ciomka smoke A schody v2 z pałacu (prawy + lewy jumpthrow).",
+        "Teey flash A entry → MrPatyk wchodzi z rampy, Rond trade. W tym samym momencie Ciomka i Mendi wychodzą z pałacu.",
+        "Plant default. Po plancie trzymacie rampę, pałac i schody — odbiór z CT wchodzi w krzyżowy ogień."
       ],
       "assignments": [
         {
           "role": "entry",
-          "position": "Mieszkania",
+          "position": "Uliczka pałacowa → rampa",
           "utility": "2× flash",
-          "action": "pierwszy z Mieszkań na B, czyści bench i van",
+          "action": "pierwszy z rampy, czyści kanapkę i triple",
           "timing": "1.",
           "notes": "trade: second"
         },
         {
           "role": "second",
-          "position": "Tylna alejka → Mieszkania",
-          "utility": "smoke B kuchnia + flash",
-          "action": "smoke w biegu, potem drugi na site",
+          "position": "Uliczka pałacowa → rampa",
+          "utility": "smoke A na CT + flash",
+          "action": "drugi z rampy, trade za entry",
           "timing": "2.",
           "notes": ""
         },
         {
+          "role": "lurk",
+          "position": "Wnętrze pałacu",
+          "utility": "smoke A schody v2 + flash",
+          "action": "wychodzi z pałacu razem z entry",
+          "timing": "2.",
+          "notes": "schody v2: prawy + lewy jumpthrow"
+        },
+        {
           "role": "support",
-          "position": "Tylna alejka → Mieszkania",
-          "utility": "smoke B short + flash B entry",
-          "action": "flash dla entry nad wyjściem z Mieszkań",
+          "position": "Uliczka pałacowa → rampa",
+          "utility": "smoke A jungle + flash A entry",
+          "action": "flash dla entry, trzeci z rampy",
           "timing": "3.",
           "notes": ""
         },
         {
-          "role": "lurk",
-          "position": "Tylna alejka → Mieszkania",
-          "utility": "smoke B exit",
-          "action": "ostatni w Mieszkaniach, pilnuje pleców",
-          "timing": "4.",
-          "notes": ""
-        },
-        {
           "role": "awp",
-          "position": "T spawn → mid",
-          "utility": "smoke insta okno",
-          "action": "insta okno na starcie, trzyma mid, dochodzi po plancie",
-          "timing": "start rundy",
+          "position": "Wnętrze pałacu",
+          "utility": "flash",
+          "action": "drugi z pałacu, trade za Ciomkę, potem trzyma CT",
+          "timing": "3.",
           "notes": ""
         }
       ],
-      "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+      "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu.",
+      "board": {
+        "players": {
+          "entry": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
+          "second": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
+          "support": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
+          "lurk": [[900, 368], [900, 480], [880, 590], [848, 625], [845, 700], [750, 770], [655, 752], [590, 772]],
+          "awp": [[900, 368], [900, 480], [880, 590], [848, 625], [845, 700], [750, 770], [655, 752], [590, 772]]
+        },
+        "grenades": [
+          {
+            "role": "second",
+            "type": "smoke",
+            "from": [848, 625],
+            "to": [415, 800],
+            "step": 2
+          },
+          {
+            "role": "support",
+            "type": "smoke",
+            "from": [848, 625],
+            "to": [488, 628],
+            "step": 2
+          },
+          {
+            "role": "lurk",
+            "type": "smoke",
+            "from": [750, 770],
+            "to": [548, 648],
+            "step": 2
+          },
+          {
+            "role": "support",
+            "type": "flash",
+            "from": [848, 625],
+            "to": [668, 690],
+            "step": 3
+          }
+        ]
+      }
     },
     "execute": {
       "A": {
         "title": "Execute A: rampa + pałac",
         "summary": "Pełny execute A. Trzech z rampy (Uliczka pałacowa), jeden z pałacu, AWP trzyma mid po insta oknie. Smoke'i CT, jungle, schody i top con lecą razem, molotovy czyszczą kanapkę i pod drewnem.",
-        "image": "assets/tactics/mirage/execute-a.png",
         "steps": [
           "Start rundy: Mendi insta okno z T spawnu. Ciomka idzie do pałacu, reszta na Uliczkę pałacową.",
           "Na komendę razem: Rond smoke A na CT, Teey smoke A jungle, MrPatyk smoke A top con, Ciomka smoke A schody v2 z pałacu (prawy + lewy jumpthrow).",
@@ -110,12 +216,78 @@
             "notes": ""
           }
         ],
-        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu.",
+        "board": {
+          "players": {
+            "entry": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
+            "second": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
+            "support": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
+            "lurk": [[900, 368], [900, 480], [880, 590], [848, 625], [845, 700], [750, 770], [655, 752], [590, 772]],
+            "awp": [[900, 368], [900, 480], [870, 560], [770, 548], [700, 470], [560, 470]]
+          },
+          "grenades": [
+            {
+              "role": "awp",
+              "type": "smoke",
+              "from": [895, 375],
+              "to": [445, 440],
+              "step": 1
+            },
+            {
+              "role": "second",
+              "type": "smoke",
+              "from": [848, 625],
+              "to": [415, 800],
+              "step": 2
+            },
+            {
+              "role": "support",
+              "type": "smoke",
+              "from": [848, 625],
+              "to": [488, 628],
+              "step": 2
+            },
+            {
+              "role": "entry",
+              "type": "smoke",
+              "from": [848, 625],
+              "to": [512, 540],
+              "step": 2
+            },
+            {
+              "role": "lurk",
+              "type": "smoke",
+              "from": [750, 770],
+              "to": [548, 648],
+              "step": 2
+            },
+            {
+              "role": "second",
+              "type": "molotov",
+              "from": [848, 625],
+              "to": [470, 840],
+              "step": 3
+            },
+            {
+              "role": "lurk",
+              "type": "molotov",
+              "from": [750, 770],
+              "to": [605, 815],
+              "step": 3
+            },
+            {
+              "role": "support",
+              "type": "flash",
+              "from": [848, 625],
+              "to": [668, 690],
+              "step": 4
+            }
+          ]
+        }
       },
       "B": {
         "title": "Execute B z Mieszkań",
         "summary": "Execute B: czterech przez Tylną alejkę i Mieszkania, Ciomka lurkuje na górze środka i odcina rotację przez con. Smoke'i kuchnia, short i exit z Tylnej alejki, flash B entry z Mieszkań.",
-        "image": "assets/tactics/mirage/execute-b.png",
         "steps": [
           "Start rundy: Mendi insta okno z T spawnu, potem dołącza do Tylnej alejki. Ciomka idzie na górę środka.",
           "Tylna alejka, na komendę razem: Rond smoke B kuchnia, Teey smoke B short, MrPatyk smoke B exit.",
@@ -165,7 +337,60 @@
             "notes": ""
           }
         ],
-        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu."
+        "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu.",
+        "board": {
+          "players": {
+            "entry": [[900, 368], [905, 300], [880, 240], [775, 245], [640, 190], [560, 215], [420, 195], [300, 185], [262, 238], [285, 300]],
+            "second": [[900, 368], [905, 300], [880, 240], [775, 245], [640, 190], [560, 215], [420, 195], [300, 185], [262, 238], [285, 300]],
+            "support": [[900, 368], [905, 300], [880, 240], [775, 245], [640, 190], [560, 215], [420, 195], [300, 185], [262, 238], [285, 300]],
+            "awp": [[900, 368], [905, 300], [880, 240], [775, 245], [640, 190], [560, 215], [420, 195], [300, 185], [262, 238], [285, 300]],
+            "lurk": [[900, 368], [900, 480], [870, 560], [770, 548], [700, 470]]
+          },
+          "grenades": [
+            {
+              "role": "awp",
+              "type": "smoke",
+              "from": [895, 375],
+              "to": [445, 440],
+              "step": 1
+            },
+            {
+              "role": "second",
+              "type": "smoke",
+              "from": [775, 245],
+              "to": [300, 440],
+              "step": 2
+            },
+            {
+              "role": "support",
+              "type": "smoke",
+              "from": [775, 245],
+              "to": [385, 352],
+              "step": 2
+            },
+            {
+              "role": "entry",
+              "type": "smoke",
+              "from": [775, 245],
+              "to": [175, 395],
+              "step": 2
+            },
+            {
+              "role": "lurk",
+              "type": "flash",
+              "from": [700, 470],
+              "to": [505, 525],
+              "step": 3
+            },
+            {
+              "role": "second",
+              "type": "flash",
+              "from": [420, 195],
+              "to": [250, 222],
+              "step": 4
+            }
+          ]
+        }
       }
     },
     "backup": null
@@ -432,6 +657,7 @@
       "target": "Okno",
       "side": "T",
       "site": "Mid",
+      "spawn": 1,
       "from": "T spawn (1)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-1.jpg",
@@ -446,6 +672,7 @@
       "target": "Okno",
       "side": "T",
       "site": "Mid",
+      "spawn": 2,
       "from": "T spawn (2)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-2.jpg",
@@ -460,6 +687,7 @@
       "target": "Okno",
       "side": "T",
       "site": "Mid",
+      "spawn": 3,
       "from": "T spawn (3)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-3.jpg",
@@ -474,6 +702,7 @@
       "target": "Okno",
       "side": "T",
       "site": "Mid",
+      "spawn": 4,
       "from": "T spawn (4)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-4.jpg",
@@ -488,6 +717,7 @@
       "target": "Okno",
       "side": "T",
       "site": "Mid",
+      "spawn": 5,
       "from": "T spawn (5)",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-5.jpg",

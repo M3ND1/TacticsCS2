@@ -1,6 +1,10 @@
 {
   "id": "anubis",
   "name": "Anubis",
+  "spawns": {
+    "T": "assets/spawns/anubis/T.jpg",
+    "CT": "assets/spawns/anubis/CT.jpg"
+  },
   "strategies": {
     "pistol": null,
     "execute": {

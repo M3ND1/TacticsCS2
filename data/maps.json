@@ -29,6 +29,11 @@
       "id": "anubis",
       "name": "Anubis",
       "accent": "#3fa79a"
+    },
+    {
+      "id": "cache",
+      "name": "Cache",
+      "accent": "#8f86c8"
     }
   ]
 }

@@ -27,42 +27,48 @@
       "name": "Mendi",
       "role": "awp",
       "status": "active",
-      "aspect": null
+      "aspect": null,
+      "color": "#4aa8e0"
     },
     {
       "id": "teey",
       "name": "Teey",
       "role": "support",
       "status": "active",
-      "aspect": null
+      "aspect": null,
+      "color": "#6cc06a"
     },
     {
       "id": "mrpatyk",
       "name": "MrPatyk",
       "role": "entry",
       "status": "active",
-      "aspect": null
+      "aspect": null,
+      "color": "#b07ee8"
     },
     {
       "id": "rond",
       "name": "Rond",
       "role": "second",
       "status": "active",
-      "aspect": null
+      "aspect": null,
+      "color": "#e07bb5"
     },
     {
       "id": "ciomka",
       "name": "Ciomka",
       "role": "lurk",
       "status": "active",
-      "aspect": null
+      "aspect": null,
+      "color": "#4fd1c5"
     },
     {
       "id": "behimo",
       "name": "Behimo",
       "role": null,
       "status": "sub",
-      "aspect": null
+      "aspect": null,
+      "color": "#f0a050"
     }
   ]
 }

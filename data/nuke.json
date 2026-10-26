@@ -1,6 +1,10 @@
 {
   "id": "nuke",
   "name": "Nuke",
+  "spawns": {
+    "T": "assets/spawns/nuke/T.jpg",
+    "CT": "assets/spawns/nuke/CT.jpg"
+  },
   "strategies": {
     "pistol": null,
     "execute": {

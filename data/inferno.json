@@ -1,6 +1,10 @@
 {
   "id": "inferno",
   "name": "Inferno",
+  "spawns": {
+    "T": "assets/spawns/inferno/T.jpg",
+    "CT": "assets/spawns/inferno/CT.jpg"
+  },
   "strategies": {
     "pistol": null,
     "execute": {
