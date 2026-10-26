@@ -9,5 +9,34 @@
     },
     "backup": null
   },
-  "lineups": []
+  "lineups": [
+ {
+      "id": "b-short",
+      "player": "teey",
+      "type": "smoke",
+      "name": "B Short",
+      "target": "B Short",
+      "side": "T",
+      "from": "Przed brama",
+      "throw": "jumpthrow",
+      "aspect": "16:9",
+      "image": "assets/lineups/ancient/teey/B-smoke-short.jpg",
+      "instructions": "",
+      "notes": ""
+    },
+ {
+      "id": "a-temple",
+      "player": "teey",
+      "type": "smoke",
+      "name": "A temple",
+      "target": "A Temple",
+      "side": "T",
+      "from": "Przed A",
+      "throw": "jumpthrow",
+      "aspect": "16:9",
+      "image": "assets/lineups/ancient/teey/A-smoke-temple.jpg",
+      "instructions": "",
+      "notes": ""
+    }
+]
 }
