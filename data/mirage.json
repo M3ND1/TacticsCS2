@@ -72,96 +72,97 @@
   },
   "strategies": {
     "pistol": {
-      "title": "Split A: rampa + pałac",
-      "summary": "Pistolówka: split A — trzech z rampy (Uliczka pałacowa), dwóch z pałacu. Trzy smoke'i (CT, jungle, schody) i flash A entry, wejście z dwóch stron naraz.\nKupno: smoke + flash, entry 2× flash.",
+      "title": "Mid → B",
+      "summary": "Pistolówka: rush mid → short → B. Teey smoke'uje okno i con ze spawnu, Ciomka idzie Mieszkaniami i flashuje short oraz B, MrPatyk, Rond i Mendi rushują mid do shorta.\nZakupy: 3× kevlar (rush); smoke + 2× flash (Teey); smoke + 2× flash albo smoke + molo / smoke + flash + P250 (Ciomka).",
       "steps": [
-        "Start rundy: MrPatyk, Rond i Teey idą na Uliczkę pałacową (rampa), Ciomka i Mendi do Wnętrza pałacu.",
-        "Na komendę razem: Rond smoke A na CT i Teey smoke A jungle z Uliczki pałacowej, Ciomka smoke A schody v2 z pałacu (prawy + lewy jumpthrow).",
-        "Teey flash A entry → MrPatyk wchodzi z rampy, Rond trade. W tym samym momencie Ciomka i Mendi wychodzą z pałacu.",
-        "Plant default. Po plancie trzymacie rampę, pałac i schody — odbiór z CT wchodzi w krzyżowy ogień."
+        "Start rundy: Teey rzuca insta okno i smoke Mid con z T spawnu. Ciomka biegnie Tylną alejką do Mieszkań, MrPatyk, Rond i Mendi rushują mid do shorta.",
+        "Ciomka od razu flashuje short znad underpassu — rush wchodzi na short.",
+        "Ciomka dorzuca w tempo flashe nad B, żeby ułatwić wejście z shorta.",
+        "Teey decyduje wg przebiegu rundy: góra środka (trzyma rotację z cona) albo Mieszkania (wspiera Ciomkę i trzyma rotację z underpassu).",
+        "Ciomka sprawdza całe Mieszkania aż do balkonu, ale raczej nie wyskakuje na BS."
       ],
+      "board": {
+        "players": {
+          "entry": [[900, 368], [900, 480], [870, 560], [770, 548], [700, 470], [560, 470], [470, 455], [412, 420], [395, 355], [335, 320]],
+          "second": [[900, 368], [900, 480], [870, 560], [770, 548], [700, 470], [560, 470], [470, 455], [412, 420], [395, 355], [335, 320]],
+          "awp": [[900, 368], [900, 480], [870, 560], [770, 548], [700, 470], [560, 470], [470, 455], [412, 420], [395, 355], [335, 320]],
+          "support": [[900, 368], [900, 480], [870, 560], [770, 548], [700, 470]],
+          "lurk": [[900, 368], [905, 300], [880, 240], [775, 245], [640, 190], [560, 215], [420, 195], [300, 185]]
+        },
+        "grenades": [
+          {
+            "role": "support",
+            "type": "smoke",
+            "from": [895, 375],
+            "to": [445, 440],
+            "step": 1
+          },
+          {
+            "role": "support",
+            "type": "smoke",
+            "from": [905, 385],
+            "to": [500, 530],
+            "step": 1
+          },
+          {
+            "role": "lurk",
+            "type": "flash",
+            "from": [470, 235],
+            "to": [385, 352],
+            "step": 2
+          },
+          {
+            "role": "lurk",
+            "type": "flash",
+            "from": [300, 185],
+            "to": [250, 250],
+            "step": 3
+          }
+        ]
+      },
       "assignments": [
         {
           "role": "entry",
-          "position": "Uliczka pałacowa → rampa",
-          "utility": "2× flash",
-          "action": "pierwszy z rampy, czyści kanapkę i triple",
+          "position": "Mid → short",
+          "utility": "kevlar",
+          "action": "rush mid do shorta, pierwszy na B",
           "timing": "1.",
           "notes": "trade: second"
         },
         {
           "role": "second",
-          "position": "Uliczka pałacowa → rampa",
-          "utility": "smoke A na CT + flash",
-          "action": "drugi z rampy, trade za entry",
+          "position": "Mid → short",
+          "utility": "kevlar",
+          "action": "rush mid do shorta, trade za entry",
           "timing": "2.",
-          "notes": ""
-        },
-        {
-          "role": "lurk",
-          "position": "Wnętrze pałacu",
-          "utility": "smoke A schody v2 + flash",
-          "action": "wychodzi z pałacu razem z entry",
-          "timing": "2.",
-          "notes": "schody v2: prawy + lewy jumpthrow"
-        },
-        {
-          "role": "support",
-          "position": "Uliczka pałacowa → rampa",
-          "utility": "smoke A jungle + flash A entry",
-          "action": "flash dla entry, trzeci z rampy",
-          "timing": "3.",
           "notes": ""
         },
         {
           "role": "awp",
-          "position": "Wnętrze pałacu",
-          "utility": "flash",
-          "action": "drugi z pałacu, trade za Ciomkę, potem trzyma CT",
+          "position": "Mid → short",
+          "utility": "kevlar",
+          "action": "rush mid do shorta, trzeci na B",
           "timing": "3.",
           "notes": ""
+        },
+        {
+          "role": "support",
+          "position": "T spawn → góra środka / Mieszkania",
+          "utility": "smoke insta okno + smoke Mid con + 2× flash",
+          "action": "smoke'i ze spawnu, potem góra środka (rotacja z cona) albo Mieszkania (rotacja z underpassu)",
+          "timing": "start rundy",
+          "notes": "kupuje smoke + 2× flash; drugi smoke z dropu"
+        },
+        {
+          "role": "lurk",
+          "position": "Tylna alejka → Mieszkania",
+          "utility": "2× flash (short instant, nad B)",
+          "action": "flash short od razu, potem flashe nad B; czyści Mieszkania do balkonu, nie wyskakuje na BS",
+          "timing": "start rundy",
+          "notes": "kupuje smoke + 2× flash (albo smoke + molo / smoke + flash + P250)"
         }
       ],
-      "notes": "Lineupy: zakładka Lineupy → Teey (pozycja rzutu w polu „Skąd”).\nPierwsza wersja ułożona z lineupów Teeya — poprawcie po treningu.",
-      "board": {
-        "players": {
-          "entry": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
-          "second": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
-          "support": [[900, 368], [900, 480], [880, 590], [848, 625], [705, 662], [600, 742]],
-          "lurk": [[900, 368], [900, 480], [880, 590], [848, 625], [845, 700], [750, 770], [655, 752], [590, 772]],
-          "awp": [[900, 368], [900, 480], [880, 590], [848, 625], [845, 700], [750, 770], [655, 752], [590, 772]]
-        },
-        "grenades": [
-          {
-            "role": "second",
-            "type": "smoke",
-            "from": [848, 625],
-            "to": [415, 800],
-            "step": 2
-          },
-          {
-            "role": "support",
-            "type": "smoke",
-            "from": [848, 625],
-            "to": [488, 628],
-            "step": 2
-          },
-          {
-            "role": "lurk",
-            "type": "smoke",
-            "from": [750, 770],
-            "to": [548, 648],
-            "step": 2
-          },
-          {
-            "role": "support",
-            "type": "flash",
-            "from": [848, 625],
-            "to": [668, 690],
-            "step": 3
-          }
-        ]
-      }
+      "notes": "Smoke'i: zakładka Lineupy → Teey (insta okno, Mid con).\nJeden gracz może mieć tylko 1 smoke — drugi smoke dla Teeya z dropu, np. od Ciomki."
     },
     "execute": {
       "A": {
@@ -659,6 +660,7 @@
       "site": "Mid",
       "spawn": 1,
       "from": "T spawn (1)",
+      "throw": "W tap jumpthrow",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-1.jpg",
       "instructions": "",
@@ -674,6 +676,7 @@
       "site": "Mid",
       "spawn": 2,
       "from": "T spawn (2)",
+      "throw": "W tap jumpthrow",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-2.jpg",
       "instructions": "",
@@ -689,6 +692,7 @@
       "site": "Mid",
       "spawn": 3,
       "from": "T spawn (3)",
+      "throw": "W tap jumpthrow",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-3.jpg",
       "instructions": "",
@@ -704,6 +708,7 @@
       "site": "Mid",
       "spawn": 4,
       "from": "T spawn (4)",
+      "throw": "W tap jumpthrow",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-4.jpg",
       "instructions": "",
@@ -719,6 +724,7 @@
       "site": "Mid",
       "spawn": 5,
       "from": "T spawn (5)",
+      "throw": "W tap jumpthrow",
       "aspect": "16:9",
       "image": "assets/lineups/mirage/teey/Mid-smoke-okno-insta-t-spawn-5.jpg",
       "instructions": "",

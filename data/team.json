@@ -28,7 +28,8 @@
       "role": "awp",
       "status": "active",
       "aspect": null,
-      "color": "#4aa8e0"
+      "color": "#4cd964",
+      "short": "M"
     },
     {
       "id": "teey",
@@ -36,7 +37,8 @@
       "role": "support",
       "status": "active",
       "aspect": null,
-      "color": "#6cc06a"
+      "color": "#b47cff",
+      "short": "T"
     },
     {
       "id": "mrpatyk",
@@ -44,7 +46,8 @@
       "role": "entry",
       "status": "active",
       "aspect": null,
-      "color": "#b07ee8"
+      "color": "#ffd23f",
+      "short": "P"
     },
     {
       "id": "rond",
@@ -52,7 +55,8 @@
       "role": "second",
       "status": "active",
       "aspect": null,
-      "color": "#e07bb5"
+      "color": "#ff8c2e",
+      "short": "R"
     },
     {
       "id": "ciomka",
@@ -60,7 +64,8 @@
       "role": "lurk",
       "status": "active",
       "aspect": null,
-      "color": "#4fd1c5"
+      "color": "#3d8bff",
+      "short": "C"
     },
     {
       "id": "behimo",
@@ -68,7 +73,8 @@
       "role": null,
       "status": "sub",
       "aspect": null,
-      "color": "#f0a050"
+      "color": "#ff6fae",
+      "short": "B"
     }
   ]
 }

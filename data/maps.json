@@ -1,9 +1,19 @@
 {
   "maps": [
     {
-      "id": "mirage",
-      "name": "Mirage",
-      "accent": "#d0904a"
+      "id": "ancient",
+      "name": "Ancient",
+      "accent": "#5f9a5a"
+    },
+    {
+      "id": "anubis",
+      "name": "Anubis",
+      "accent": "#3fa79a"
+    },
+    {
+      "id": "cache",
+      "name": "Cache",
+      "accent": "#8f86c8"
     },
     {
       "id": "dust2",
@@ -16,24 +26,14 @@
       "accent": "#c4573f"
     },
     {
-      "id": "ancient",
-      "name": "Ancient",
-      "accent": "#5f9a5a"
+      "id": "mirage",
+      "name": "Mirage",
+      "accent": "#d0904a"
     },
     {
       "id": "nuke",
       "name": "Nuke",
       "accent": "#4f9fc4"
-    },
-    {
-      "id": "anubis",
-      "name": "Anubis",
-      "accent": "#3fa79a"
-    },
-    {
-      "id": "cache",
-      "name": "Cache",
-      "accent": "#8f86c8"
     }
   ]
 }

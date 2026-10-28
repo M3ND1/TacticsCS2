@@ -13,5 +13,80 @@
     },
     "backup": null
   },
-  "lineups": []
+  "lineups": [
+    {
+      "id": "dywany-insta-ct-2",
+      "player": "teey",
+      "type": "smoke",
+      "name": "Insta dywany 2 (CT spawn)",
+      "target": "Dywany",
+      "side": "CT",
+      "spawn": 2,
+      "from": "CT spawn (2)",
+      "aspect": "16:9",
+      "image": "assets/lineups/anubis/teey/Insta-smoke-dywany-ct-spawn-2.jpg",
+      "instructions": "",
+      "notes": ""
+    },
+    {
+      "id": "schody-insta-ct-2",
+      "player": "teey",
+      "type": "smoke",
+      "name": "Insta schody 2 (CT spawn)",
+      "target": "Schody",
+      "side": "CT",
+      "spawn": 2,
+      "from": "CT spawn (2)",
+      "throw": "Jumpthrow",
+      "aspect": "16:9",
+      "image": "assets/lineups/anubis/teey/Insta-smoke-schody-ct-spawn-2.jpg",
+      "instructions": "",
+      "notes": ""
+    },
+    {
+      "id": "schody-insta-ct-3",
+      "player": "teey",
+      "type": "smoke",
+      "name": "Insta schody 3 (CT spawn)",
+      "target": "Schody",
+      "side": "CT",
+      "spawn": 3,
+      "from": "CT spawn (3)",
+      "throw": "Jumpthrow",
+      "aspect": "16:9",
+      "image": "assets/lineups/anubis/teey/Insta-smoke-schody-ct-spawn-3.jpg",
+      "instructions": "",
+      "notes": ""
+    },
+    {
+      "id": "schody-insta-ct-4",
+      "player": "teey",
+      "type": "smoke",
+      "name": "Insta schody 4 (CT spawn)",
+      "target": "Schody",
+      "side": "CT",
+      "spawn": 4,
+      "from": "CT spawn (4)",
+      "throw": "Jumpthrow",
+      "aspect": "16:9",
+      "image": "assets/lineups/anubis/teey/Insta-smoke-schody-ct-spawn-4.jpg",
+      "instructions": "",
+      "notes": ""
+    },
+    {
+      "id": "schody-insta-ct-5",
+      "player": "teey",
+      "type": "smoke",
+      "name": "Insta schody 5 (CT spawn)",
+      "target": "Schody",
+      "side": "CT",
+      "spawn": 5,
+      "from": "CT spawn (5)",
+      "throw": "Jumpthrow",
+      "aspect": "16:9",
+      "image": "assets/lineups/anubis/teey/Insta-smoke-schody-ct-spawn-5.jpg",
+      "instructions": "",
+      "notes": ""
+    }
+  ]
 }
