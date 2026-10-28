@@ -184,12 +184,15 @@ class ValidateTest(unittest.TestCase):
         ]:
             self.assertProblem(fragment)
 
-    def test_player_color(self):
+    def test_player_color_and_short(self):
         team = json.loads(json.dumps(TEAM))
-        team["players"][0]["color"] = "#4aa8e0"
-        team["players"][1]["color"] = "blue"
+        team["players"][0].update(color="#4aa8e0", short="P")
+        team["players"][1].update(color="blue", short="Long")
         self.write("data/team.json", team)
-        self.assertEqual(self.problems(), ['data/team.json: gracz "p2": "color" musi być kolorem w formacie #RRGGBB'])
+        self.assertEqual(self.problems(), [
+            'data/team.json: gracz "p2": "color" musi być kolorem w formacie #RRGGBB',
+            'data/team.json: gracz "p2": "short" musi być skrótem 1–3 znaków',
+        ])
 
     def test_lineup_site(self):
         m = mirage()

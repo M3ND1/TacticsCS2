@@ -157,6 +157,8 @@ def check_team(team):
             p(f'gracz "{pid}": "aspect" musi być jednym z: {", ".join(ASPECTS)} albo null')
         if pl.get("color") is not None and not (isinstance(pl["color"], str) and HEX_RE.match(pl["color"])):
             p(f'gracz "{pid}": "color" musi być kolorem w formacie #RRGGBB')
+        if pl.get("short") is not None and not (is_text(pl["short"]) and len(pl["short"].strip()) <= 3):
+            p(f'gracz "{pid}": "short" musi być skrótem 1–3 znaków')
         role = pl.get("role")
         if role is None:
             continue

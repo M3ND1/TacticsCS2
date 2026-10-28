@@ -10,7 +10,7 @@
 :root {
   --bg: #16181b; --panel: #1c1f23; --border: #2a2d31; --text: #d7dadf; --muted: #8a9099;
   --accent: #6a9f5b; --accent-bg: color-mix(in srgb, var(--accent) 16%, var(--bg)); --warn: #d29a3a; --err: #d0544f;
-  --smoke: #a7adb5; --flash: #e3c34a; --molotov: #e0604e;
+  --smoke: #7cc7ff; --flash: #e3c34a; --molotov: #e0604e;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -81,6 +81,8 @@ th { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: upp
 .swatch { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
 .board-svg { display: block; width: 100%; max-height: 80vh; background: #0b1016; border: 1px solid var(--border); border-radius: 4px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor: crosshair; }
 .board-svg .grenade { transition: opacity .15s; }
+.board-svg .ut-smoke { color: #dde3ea; } /* on the radar smoke stays a light cloud, apart from the blue player */
+.pname { font-weight: 600; white-space: nowrap; }
 .board-svg.focused .grenade:not(.on) { opacity: .12; }
 .board-svg.focused .routes { opacity: .45; }
 .coords { margin: 4px 0 0; font-size: 12px; }
@@ -349,6 +351,9 @@ const Core = (() => {
       }
       if (pl.color != null && !(typeof pl.color === "string" && HEX_RE.test(pl.color))) {
         p(`gracz "${pl.id}": "color" musi być kolorem w formacie #RRGGBB`);
+      }
+      if (pl.short != null && !(isText(pl.short) && pl.short.trim().length <= 3)) {
+        p(`gracz "${pl.id}": "short" musi być skrótem 1–3 znaków`);
       }
       if (pl.role == null) return;
       if (typeof pl.role !== "string" || !roleIds.has(pl.role)) return p(`gracz "${pl.id}": nieznana rola "${pl.role}"`);
@@ -972,12 +977,38 @@ function playerColor(player) {
   return PLAYER_PALETTE[Math.max(0, app.team.players.indexOf(player)) % PLAYER_PALETTE.length];
 }
 
+// nick in the player's colour, with a dot, so each player is easy to spot
+function playerTag(p) {
+  const color = playerColor(p);
+  return h("span", { class: "pname", style: `color:${color}` }, h("span", { class: "swatch", style: `background:${color}` }), p.name || p.id);
+}
+
 function playerCell(roleId) {
   const res = Core.resolveRole(app.team, roleId);
   if (res.kind === "none") return h("span", { class: "warn" }, "— brak gracza");
-  const names = res.players.map((p, i) => [i ? ", " : "", h("span", { class: "swatch", style: `background:${playerColor(p)}` }),
-    p.name || p.id, aspectTag(p)]);
+  const names = res.players.map((p, i) => [i ? ", " : "", playerTag(p), aspectTag(p)]);
   return res.kind === "sub" ? [names, " ", h("span", { class: "muted" }, "(rezerwa)")] : names;
+}
+
+// strategy text: grenade words and player nicks in their colours
+function richText(text) {
+  const byName = new Map(app.team.players.map((p) => [String(p.name || p.id).toLowerCase(), p]));
+  const escape = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = byName.size ? new RegExp(`(?<![\\p{L}\\d])(${[...byName.keys()].map(escape).join("|")})(?![\\p{L}\\d])`, "giu") : null;
+  const nicks = (str) => {
+    if (!re) return str;
+    const out = [];
+    let last = 0;
+    for (const m of str.matchAll(re)) {
+      out.push(str.slice(last, m.index));
+      const p = byName.get(m[1].toLowerCase());
+      out.push(h("b", { class: "pname", style: `color:${playerColor(p)}` }, m[1]));
+      last = m.index + m[1].length;
+    }
+    out.push(str.slice(last));
+    return out;
+  };
+  return Core.utilityTokens(text).map((t) => (t.type ? h("span", { class: `ut ut-${t.type}` }, t.text) : nicks(t.text)));
 }
 
 function assignmentsTable(rows) {
@@ -1021,9 +1052,9 @@ function renderStrategyTab(main, { map, state }) {
       for (const li of e.currentTarget.parentElement.children) li.classList.toggle("on", on === Number(li.dataset.step));
     },
     "data-step": i + 1,
-  } : null, s));
+  } : null, richText(s)));
   const text = h("div", null,
-    strat.summary ? [h("h2", null, "Opis"), h("p", { class: "pre" }, strat.summary)] : null,
+    strat.summary ? [h("h2", null, "Opis"), h("p", { class: "pre" }, richText(strat.summary))] : null,
     steps.length ? [h("h2", null, "Kroki"), board ? h("p", { class: "muted hint" }, "Kliknij krok, żeby podświetlić jego granaty na mapie.") : null,
       h("ol", { class: "steps" }, steps)] : null);
   const visual = board ? board.el : strat.image ? shot(strat.image, strat.title, file) : null;
@@ -1102,7 +1133,9 @@ function tacticBoard(radar, strat, file) {
   const filterId = "radar-style";
   const who = (role) => {
     const p = Core.resolveRole(app.team, role).players[0];
-    return p ? { name: p.name || p.id, color: playerColor(p) } : { name: role, color: "#8a9099" };
+    if (!p) return { name: role, short: role.slice(0, 2), color: "#8a9099" };
+    const name = p.name || p.id;
+    return { name, short: p.short || name.slice(0, 2), color: playerColor(p) };
   };
   const roles = [...strat.assignments.map((a) => a.role), ...Object.keys(strat.board.players)]
     .filter((r, i, all) => typeof r === "string" && all.indexOf(r) === i);
@@ -1147,9 +1180,9 @@ function tacticBoard(radar, strat, file) {
   for (const group of ends.values()) {
     group.forEach(({ r, x, y }, k) => {
       const tx = x + (k - (group.length - 1) / 2) * 34, ty = y - 30;
-      const { name, color } = who(r);
+      const { short, color } = who(r);
       routes.append(s("circle", { cx: tx, cy: ty, r: 16, fill: color, stroke: "#0b1016", "stroke-width": 2 }),
-        s("text", { x: tx, y: ty + 5, "text-anchor": "middle", "font-size": 14, "font-weight": 700, fill: "#0b1016" }, name.slice(0, 2)));
+        s("text", { x: tx, y: ty + 5.5, "text-anchor": "middle", "font-size": 16, "font-weight": 800, fill: "#0b1016" }, short));
     });
   }
 
@@ -1207,7 +1240,7 @@ VIEWS.insta = (main, { map, state }) => {
         ? h("div", { class: "insta-grid" }, list.map((l) => h("div", { class: "insta-card" },
           shot(l.image, `#${l.spawn} — ${l.name}`, file),
           h("span", { class: "num" }, l.spawn),
-          h("span", { class: "cap" }, l.target))))
+          h("span", { class: "cap" }, l.throw ? `${l.throw} · ${l.target}` : l.target))))
         : h("p", { class: "muted" }, `Brak insta smoke'ów po stronie ${side}.`)));
   }
   if (!shown) {
@@ -1232,7 +1265,7 @@ function lineupRow(l, mapId, file, myAspect) {
       Core.aspectMismatch(l.aspect, myAspect)
         ? h("p", { class: "warn" }, `⚠ Lineup pod ${aspect} — Ty grasz na ${Core.formatAspect(myAspect)}, może nie wejść.`)
         : null,
-      h("dl", { class: "kv" }, kv("Cel", l.target), kv("Rejon", l.site), kv("Strona", l.side),
+      h("dl", { class: "kv" }, kv("Rejon", l.site), kv("Strona", l.side),
         kv("Spawn", l.spawn != null ? `#${l.spawn}` : null), kv("Skąd", l.from), kv("Rzut", l.throw)),
       l.instructions ? [h("h2", null, "Instrukcja"), h("p", { class: "pre" }, l.instructions)] : null,
       l.notes ? [h("h2", null, "Notatki zespołu"), h("p", { class: "pre" }, l.notes)] : null,
@@ -1249,7 +1282,7 @@ VIEWS.lineupy = (main, { map, state }) => {
     type: "button",
     "aria-pressed": String(p.id === playerId),
     onclick: () => navigate({ player: p.id }),
-  }, h("span", null, p.name || p.id, aspectTag(p)), h("span", { class: "muted" }, String(count(p.id))));
+  }, h("span", null, playerTag(p), aspectTag(p)), h("span", { class: "muted" }, String(count(p.id))));
 
   const content = h("div");
   main.append(h("div", { class: "layout-lineups" },

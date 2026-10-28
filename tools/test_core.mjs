@@ -239,15 +239,20 @@ test("instaLineups: one side, spawn order", () => {
   assert.deepEqual(Core.instaLineups(ls, "CT").map((l) => l.id), ["c"]);
 });
 
-test("checkTeam validates player color", () => {
+test("checkTeam validates player color and short name", () => {
   const msgs = Core.checkTeam({
     roles: [],
     players: [
-      { id: "a", name: "A", role: null, status: "active", color: "#4aa8e0" },
-      { id: "b", name: "B", role: null, status: "active", color: "blue" },
+      { id: "a", name: "A", role: null, status: "active", color: "#4aa8e0", short: "A" },
+      { id: "b", name: "B", role: null, status: "active", color: "blue", short: "Long" },
+      { id: "c", name: "C", role: null, status: "active", short: " " },
     ],
   }).map((p) => p.message);
-  assert.deepEqual(msgs, ['gracz "b": "color" musi być kolorem w formacie #RRGGBB']);
+  assert.deepEqual(msgs, [
+    'gracz "b": "color" musi być kolorem w formacie #RRGGBB',
+    'gracz "b": "short" musi być skrótem 1–3 znaków',
+    'gracz "c": "short" musi być skrótem 1–3 znaków',
+  ]);
 });
 
 test("notes export/import round-trip", () => {

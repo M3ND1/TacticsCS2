@@ -167,18 +167,19 @@ Tablica w strategii:
 
 Obrazki strategii to diagramy / screenshoty taktyczne i **nie mają pola proporcji** (tylko lineupy je mają). Jeśli ma to znaczenie, dopisz proporcje do nazwy pliku, np. `execute-a-16x9.png`.
 
-W kolumnie **Utility** tabel słowa smoke…, flash…, molo… / molotov i incendiary same dostają kolor (smoke szary, flash żółty, molotov czerwony).
+W kolumnie **Utility**, w opisie i w krokach słowa smoke…, flash…, molo… / molotov i incendiary same dostają kolor (smoke niebieski, flash żółty, molotov czerwony), a nicki graczy — kolor gracza.
 
 ## Gracze, role i rezerwowi (`data/team.json`)
 
 ```json
 {
   "roles":   [{ "id": "entry", "name": "Entry" }],
-  "players": [{ "id": "mendi", "name": "Mendi", "role": "entry", "status": "active", "aspect": "16:9", "color": "#4aa8e0" }]
+  "players": [{ "id": "mendi", "name": "Mendi", "role": "entry", "status": "active", "aspect": "16:9", "color": "#4cd964", "short": "M" }]
 }
 ```
 
-- `color`: kolor gracza na tablicy taktycznej i przy nicku w tabelach (`#RRGGBB`, opcjonalny).
+- `color`: kolor gracza — na tablicy taktycznej, przy nicku w tabelach, na liście graczy w Lineupach i w krokach taktyk (`#RRGGBB`, opcjonalny).
+- `short`: skrót gracza (1–3 znaki) na żetonach tablicy taktycznej, np. `"M"` (opcjonalny; bez niego dwie pierwsze litery nicku).
 - `status`: `"active"` (skład) albo `"sub"` (rezerwowy). Liczba graczy jest dowolna.
 - `aspect`: proporcje ekranu gracza — `"4:3"`, `"4:3 stretched"`, `"16:9"`, `"21:9"` albo `null` (nieustawione, na stronie widać „?”). Widać je przy nicku w tabelach, na liście lineupów i w „Kim jestem” — reszta drużyny od razu wie, że ktoś gra na innych proporcjach i jego instant smoke może u nich nie wejść.
 - Role w `data/team.json` są na razie przykładowe — ustaw własne.
